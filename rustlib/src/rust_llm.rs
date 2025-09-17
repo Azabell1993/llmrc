@@ -45,7 +45,7 @@ pub fn cpu_info_platform() -> CpuInfo {
     let logical = std::thread::available_parallelism().map(|n| n.get() as u32).unwrap_or(0);
     let cores = logical;    // macOS에서는 논리 코어와 물리 코어를 같다고 가정
     let freq_mhz = 0;       // [TO-DO] 주파수는 나중에 sysctl로 구현
-    let brand_str = "Apple Silicon (macOS)";
+    let brand_str = "macOS CPU";
 
     let mut info = CpuInfo {
         cores,
