@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-#[no_mangle]
-pub extern "C" fn rust_func() {
-    println!("Hello Rust!");
-}
-=======
 mod rust_llm;
 
 // llmrust 디렉터리를 모듈로 선언
@@ -23,4 +17,3 @@ pub use rust_llm::cpu_info_platform;
 
 // llmrust 모듈에서 함수 export
 pub use llmrust::llmrust_hello;
->>>>>>> llm_poc

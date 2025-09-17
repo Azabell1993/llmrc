@@ -4,8 +4,6 @@ project(RustCppApp CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-<<<<<<< HEAD
-=======
 # -------- Debug build option --------
 option(ENABLE_DEBUG_OUTPUT "Enable debug output" OFF)
 if(ENABLE_DEBUG_OUTPUT OR CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -13,7 +11,6 @@ if(ENABLE_DEBUG_OUTPUT OR CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Debug output enabled")
 endif()
 
->>>>>>> llm_poc
 # -------- Options (cache) --------
 set(RUST_CRATE_DIR "${CMAKE_SOURCE_DIR}/../rustlib" CACHE PATH "Path to the Rust crate dir")
 set(CBINDGEN_CFG   "${CMAKE_SOURCE_DIR}/../cbindgen.toml" CACHE FILEPATH "cbindgen config file")
@@ -132,15 +129,12 @@ add_rust_staticlib(llm_rust "${RUST_CRATE_DIR}" CBINDGEN_CFG "${CBINDGEN_CFG}")
 #   - EXECUTABLE:     cpp_app (최종 실행파일)
 # ===========================================
 add_library(cpp_objs OBJECT ${CPP_SOURCES})
-<<<<<<< HEAD
-=======
 add_dependencies(cpp_objs llm_rust_rust)
 target_include_directories(cpp_objs PRIVATE 
     "${CMAKE_SOURCE_DIR}/include"
     "${OUTPUT_INC}"
     "${CMAKE_BINARY_DIR}/third_party/crow/include"
 )
->>>>>>> llm_poc
 # 개별 오브젝트(.o) 복사 스크립트 생성
 set(COPY_OBJS_SCRIPT "${CMAKE_BINARY_DIR}/copy_objs.cmake")
 file(WRITE "${COPY_OBJS_SCRIPT}" "
