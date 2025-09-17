@@ -1,0 +1,28 @@
+# Ignore MacOS system files
+.vscode
+
+# Ignore build directories and files
+.DS_Store
+
+# Ignore Rust build directory
+rustlib/target/
+/target/
+output/
+
+# Ignore Rust and C++ build directories
+cpp-app/build/
+
+# Ignore build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+*.lib
+*.obj
+*.o
+*.log
+*.out
+*.class
+*.jar
+*.a
