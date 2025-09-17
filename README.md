@@ -62,6 +62,6 @@ Usage: ./build.sh [build|run|clean|reconfig|fresh] <--arm64|--x86_64>
 ## 참고
 
 - 빌드 전 `./build.sh clean --arm64` 또는 `./build.sh clean --x86_64` 실행을 권장합니다.
-- 빌드 결과물은 `cpp-app/build` 디렉토리에 생성됩니다.
+- 빌드 결과물은 `output` 디렉토리에 생성됩니다.
 - C++와 Rust가 통합된 프로젝트입니다.
 
