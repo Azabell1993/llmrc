@@ -18,25 +18,37 @@ BOLD=$'\033[1m'; GRN=$'\033[32m'; RED=$'\033[31m'; YLW=$'\033[33m'; CYA=$'\033[3
 
 usage() {
   cat <<USAGE
-Usage: $0 [build|run|clean|reconfig|fresh] <--arm64|--x86_64>
+Usage: $0 [build|run|clean|reconfig|fresh|debug] <--arm64|--x86_64> [additional_args...]
   build     Configure and build with CMake (Rust build is triggered inside CMake)
-  run       Run the built binary
+  debug     Build with debug output enabled (_DEBUG flag)
+  run       Run the built binary (pass additional args after arch flag)
   clean     Clean CMake build dir + Rust targets (clean-all)
   reconfig  Force reconfigure
   fresh     Remove build dir and reconfigure from scratch
   --arm64   Force build for Apple Silicon (Rust + CMake)
   --x86_64  Force build for Intel (Rust + CMake)
+
+Examples:
+  $0 build --arm64
+  $0 debug --arm64                # Build with debug output
+  $0 run --arm64
+  $0 run --arm64 llm              # Run with 'llm' argument
+  $0 run --arm64 arg1 arg2        # Run with multiple arguments
 USAGE
 }
 
-# -------- Parse args (both required) --------
+# -------- Parse args (command and arch required, additional args optional) --------
 cmd="${1:-}"; arch_flag="${2:-}"
 if [[ -z "${cmd}" || -z "${arch_flag}" ]]; then
   echo "${RED}✘ Missing required arguments.${RST}"; usage; exit 1
 fi
 
+# Collect additional arguments for run command
+shift 2  # Remove first two arguments (cmd and arch_flag)
+additional_args=("$@")  # Collect remaining arguments
+
 case "${cmd}" in
-  build|run|clean|reconfig|fresh) ;; 
+  build|run|clean|reconfig|fresh|debug) ;; 
   *) echo "${RED}✘ Invalid command: ${cmd}${RST}"; usage; exit 1;;
 esac
 
@@ -58,12 +70,20 @@ esac
 # -------- Helpers (define BEFORE use) --------
 ensure_config() {
   mkdir -p "${BUILD_DIR}"
+  
+  # Check if debug mode is requested
+  DEBUG_FLAG=""
+  if [[ "${cmd}" == "debug" ]]; then
+    DEBUG_FLAG="-DENABLE_DEBUG_OUTPUT=ON -DCMAKE_BUILD_TYPE=Debug"
+    echo "${CYA}==> Debug mode enabled${RST}"
+  fi
+  
   if [[ ! -f "${BUILD_DIR}/CMakeCache.txt" ]]; then
     echo "${BOLD}==> Configuring (first time)...${RST}"
-    cmake -S "${SRC_DIR}" -B "${BUILD_DIR}" ${CMAKE_OPTS}
+    cmake -S "${SRC_DIR}" -B "${BUILD_DIR}" ${CMAKE_OPTS} ${DEBUG_FLAG}
   elif ! grep -q '^CMAKE_PROJECT_NAME:' "${BUILD_DIR}/CMakeCache.txt" 2>/dev/null; then
     echo "${YLW}==> Cache broken. Reconfiguring...${RST}"
-    cmake -S "${SRC_DIR}" -B "${BUILD_DIR}" ${CMAKE_OPTS}
+    cmake -S "${SRC_DIR}" -B "${BUILD_DIR}" ${CMAKE_OPTS} ${DEBUG_FLAG}
   fi
 }
 
@@ -116,14 +136,26 @@ case "${cmd}" in
     cmake --build "${BUILD_DIR}" -j
     ;;
 
+  debug)
+    echo "${CYA}==> Building with debug output enabled [${ARCH}]...${RST}"
+    ensure_config
+    echo "${BOLD}==> Building debug project [${ARCH}]...${RST}"
+    cmake --build "${BUILD_DIR}" -j
+    ;;
+
   run)
     exe="${APP_EXE}"
     if [[ ! -x "${exe}" ]]; then
       echo "${YLW}Binary missing → building first...${RST}"
       "$0" build "${arch_flag}"
     fi
-    echo "${BOLD}==> Running ${BIN_NAME} [${ARCH}]${RST}"
-    "${exe}"
+    if [[ ${#additional_args[@]} -gt 0 ]]; then
+      echo "${BOLD}==> Running ${BIN_NAME} [${ARCH}] with args: ${CYA}${additional_args[*]}${RST}"
+      "${exe}" "${additional_args[@]}"
+    else
+      echo "${BOLD}==> Running ${BIN_NAME} [${ARCH}]${RST}"
+      "${exe}"
+    fi
     ;;
 
   clean)
