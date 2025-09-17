@@ -1,6 +1,6 @@
 # Build & Run Guide
 
-## 간단한 실행 방법 (권장)
+## Quick Start (Recommended)
 
 ```bash
 ./run.sh                    # release + arm64
@@ -9,51 +9,51 @@
 ./run.sh debug x86_64       # debug + x86_64
 ```
 
-## 수동 빌드/실행
+## Manual Build/Run
 
-### 개발 모드 (Debug)
+### Development Mode (Debug)
 ```bash
-./build.sh debug            # Debug 빌드 (기본: arm64)
-./build.sh debug x86_64     # Debug 빌드 (Intel)
-./output/bin/cpp_app llm    # llm 버전 실행
-./output/bin/cpp_app llmrust # llmrust 버전 실행
+./build.sh debug            # Debug build (default: arm64)
+./build.sh debug x86_64     # Debug build (Intel)
+./output/bin/cpp_app llm    # Run llm version
+./output/bin/cpp_app llmrust # Run llmrust version
 ```
 
-### 릴리즈 모드 (Release)
+### Release Mode
 ```bash
-./build.sh                  # Release 빌드 (기본: arm64)  
-./build.sh x86_64           # Release 빌드 (Intel)
-./output/bin/cpp_app llm    # llm 버전 실행
-./output/bin/cpp_app llmrust # llmrust 버전 실행
+./build.sh                  # Release build (default: arm64)  
+./build.sh x86_64           # Release build (Intel)
+./output/bin/cpp_app llm    # Run llm version
+./output/bin/cpp_app llmrust # Run llmrust version
 ```
 
-### run.sh 사용법
+### run.sh Usage
 ```bash
-# 기본 사용법 (Release 모드)
+# Basic usage (Release mode)
 ./run.sh                    # clean + build + run with llm (arm64)
 ./run.sh x86_64             # clean + build + run with llm (Intel)
 
-# Debug 모드 사용법  
+# Debug mode usage  
 ./run.sh debug              # clean + debug + run with llm (arm64)
 ./run.sh debug x86_64       # clean + debug + run with llm (Intel)
 
-# Release 모드 명시적 사용법
+# Explicit release mode usage
 ./run.sh release            # clean + build + run with llm (arm64)
 ./run.sh release x86_64     # clean + build + run with llm (Intel)
 
-# 도움말
-./run.sh -h                 # 사용법 출력
-./run.sh --help             # 사용법 출력
+# Help
+./run.sh -h                 # Show usage
+./run.sh --help             # Show usage
 ```
 
-## 쉽게 테스트 한 번에 하기
-1) Debug 모드
+## One-Command Testing
+1) Debug Mode
 >  % ./build.sh clean --arm64 && ./build.sh debug --arm64 && ./build.sh run --arm64 llm
 
-2) Realase 모드
+2) Release Mode
 >  % ./build.sh clean --arm64 && ./build.sh build --arm64 && ./build.sh run --arm64 llm
 
-## 빌드 출력 예시
+## Build Output Example
 
 ```
 ==> Building project [arm64]...
@@ -67,43 +67,43 @@ Export rust staticlib -> .../output/lib
 [100%] Built target cpp_app
 ```
 
-## 명령어 가이드
+## Command Guide
 
-### 간단한 방법 (run.sh)
-| 작업                    | 명령어               | 설명                           |
-|-------------------------|---------------------|--------------------------------|
-| 전체 파이프라인 (기본)    | `./run.sh`          | clean + build + run llm (arm64) |
-| Intel 아키텍처 실행      | `./run.sh x86_64`   | clean + build + run llm (x86_64) |
+### Simple Method (run.sh)
+| Task                     | Command             | Description                    |
+|--------------------------|---------------------|--------------------------------|
+| Full Pipeline (Default) | `./run.sh`          | clean + build + run llm (arm64) |
+| Intel Architecture Run  | `./run.sh x86_64`   | clean + build + run llm (x86_64) |
 
-### 상세 제어 (build.sh)
-| 작업         | 명령어 (Apple Silicon)         | 명령어 (Intel)             |
+### Detailed Control (build.sh)
+| Task         | Command (Apple Silicon)        | Command (Intel)            |
 |--------------|-------------------------------|----------------------------|
-| 빌드         | `./build.sh build --arm64`    | `./build.sh build --x86_64`|
-| 실행 (기본)   | `./build.sh run --arm64`      | `./build.sh run --x86_64`  |
-| 실행 (LLM)   | `./build.sh run --arm64 llm`  | `./build.sh run --x86_64 llm`|
-| 클린         | `./build.sh clean --arm64`    | `./build.sh clean --x86_64`|
-| 디버그       | `./build.sh debug --arm64`     | `./build.sh debug --x86_64` |
-| 재설정       | `./build.sh fresh --arm64`    | `./build.sh fresh --x86_64`|
-| 재설정(강제) | `./build.sh reconfig --arm64` | `./build.sh reconfig --x86_64`|
+| Build        | `./build.sh build --arm64`    | `./build.sh build --x86_64`|
+| Run (Basic)  | `./build.sh run --arm64`      | `./build.sh run --x86_64`  |
+| Run (LLM)    | `./build.sh run --arm64 llm`  | `./build.sh run --x86_64 llm`|
+| Clean        | `./build.sh clean --arm64`    | `./build.sh clean --x86_64`|
+| Debug        | `./build.sh debug --arm64`    | `./build.sh debug --x86_64` |
+| Reset        | `./build.sh fresh --arm64`    | `./build.sh fresh --x86_64`|
+| Force Reset  | `./build.sh reconfig --arm64` | `./build.sh reconfig --x86_64`|
 
-> **Tip:** 아키텍처를 변경하거나 Rust 코드를 업데이트할 때는 항상 클린 후 빌드하세요.
+> **Tip:** Always clean before build when switching architectures or updating Rust code.
 
 ---
 
-## 사용법
+## Usage
 
-### run.sh (간단한 파이프라인)
+### run.sh (Simple Pipeline)
 ```
 Usage: ./run.sh [arch]
   arch: arm64 (default) or x86_64
 
 Examples:
   ./run.sh          # clean + build + run with llm (arm64)
-  ./run.sh arm64     # 명시적으로 arm64 지정
-  ./run.sh x86_64    # Intel 아키텍처로 실행
+  ./run.sh arm64     # explicitly specify arm64
+  ./run.sh x86_64    # run on Intel architecture
 ```
 
-### build.sh (상세 제어)
+### build.sh (Detailed Control)
 ```
 Usage: ./build.sh [build|run|clean|reconfig|fresh] <--arm64|--x86_64> [additional_args...]
   build     Configure and build with CMake (Rust build is triggered inside CMake)
@@ -125,22 +125,22 @@ Examples:
 
 ---
 
-> **Tip:** 아키텍처를 변경하거나 Rust 코드를 업데이트할 때는 항상 클린 후 빌드하세요.
+> **Tip:** Always clean before build when switching architectures or updating Rust code.
 
-## 참고사항
+## Additional Information
 
-### 추천 워크플로우
-1. **일반 사용**: `./run.sh` - 모든 과정이 자동으로 진행됩니다
-2. **개발 중**: `./build.sh clean --arm64 && ./build.sh build --arm64` 후 테스트
-3. **디버깅**: `./build.sh run --arm64 [args...]`로 다양한 인자 테스트
+### Recommended Workflows
+1. **General Use**: `./run.sh` - All processes run automatically
+2. **During Development**: Run `./build.sh clean --arm64 && ./build.sh build --arm64` then test
+3. **Debugging**: Test with various arguments using `./build.sh run --arm64 [args...]`
 
-### 주요 정보
-- **빌드 결과물**: `output/bin/llmrcpp_app`에 생성
-- **아키텍처**: arm64 (Apple Silicon) 기본, x86_64 지원
-- **통합 환경**: C++와 Rust가 통합된 하이브리드 프로젝트
-- **LLM 기능**: `llm` 인자로 특별한 Rust LLM 함수 호출 가능
+### Key Information
+- **Build Output**: Generated in `output/bin/llmrcpp_app`
+- **Architecture**: arm64 (Apple Silicon) default, x86_64 supported
+- **Integrated Environment**: Hybrid project combining C++ and Rust
+- **LLM Features**: Special Rust LLM function calls available with `llm` argument
 
-### 문제 해결
-- 아키텍처 변경 시: 반드시 clean 후 빌드
-- Rust 코드 변경 시: clean 후 빌드 권장
-- 빌드 오류 시: `./build.sh fresh --arm64`로 완전 재설정
+### Troubleshooting
+- When changing architecture: Always clean before build
+- When updating Rust code: Clean before build recommended
+- On build errors: Complete reset with `./build.sh fresh --arm64`
