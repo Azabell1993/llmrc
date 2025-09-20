@@ -1,3 +1,17 @@
 language = "C"
 include_guard = "LLM_RUST_H"
 pragma_once = true
+
+# Suppress cbindgen warnings for internal variables
+[parse]
+parse_deps = false
+exclude = [
+    "_INTERNAL_CTX",
+    "_INTERNAL_MODEL",
+    "_INTERNAL_SMPL", 
+    "_INTERNAL_PARAMS",
+    "_INTERNAL_INPUT_TOKENS",
+    "_INTERNAL_OUTPUT_TOKENS",
+    "_INTERNAL_IS_INTERACTING",
+    "_INTERNAL_NEED_INSERT_EOT"
+]
