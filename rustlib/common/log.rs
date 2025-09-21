@@ -594,43 +594,10 @@ fn _sigint_handler_rust(_signo: c_int) {
     }
 }
 
-#[cfg(windows)]
-unsafe extern "system" fn console_ctrl_handler(ctrl_type: u32) -> i32 {
-    use win::CTRL_C_EVENT;
-    if ctrl_type == CTRL_C_EVENT {
-        sigint_handler(SIGINT as i32);
-        1
-    } else {
-        0
-    }
-}
-
 #[no_mangle]
 extern "C" fn sigint_handler(signo: c_int) {
     #[cfg(any(unix, all(target_os = "macos", target_family = "unix")))]
     _sigint_handler_rust(signo);
-
-    #[cfg(windows)]
-    {
-        unsafe {
-            if !(*get_params()).is_null() {
-                let params = *get_params();
-                if !get_is_interacting().load(Ordering::SeqCst) && (**params).interactive {
-                    get_is_interacting().store(true, Ordering::SeqCst);
-                    get_need_insert_eot().store(true, Ordering::SeqCst);
-                } else {
-                    console_cleanup();
-                    eprintln!();
-                    if !(*get_ctx()).is_null() && !(*get_smpl()).is_null() {
-                        common_perf_print(**get_ctx(), **get_smpl());
-                    }
-                    rs_log_info(cstr("Interrupted by user").as_ptr());
-                    common_log_pause(common_log_main());
-                    std::process::exit(130);
-                }
-            }
-        }
-    }
 }
 
 // Usage callback
@@ -680,12 +647,7 @@ pub extern "C" fn rust_entry(argc: i32, argv: *mut *mut std::os::raw::c_char) ->
             sa.sa_flags = 0;
             libc::sigaction(SIGINT, &sa, null_mut());
         }
-
-        #[cfg(windows)]
-        {
-            win::SetConsoleCtrlHandler(Some(console_ctrl_handler), 1);
-        }
-
+        // Parse command line arguments and initialize parameters
         // Call main logic
         call_log_rs();
 

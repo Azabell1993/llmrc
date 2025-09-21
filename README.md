@@ -1,3 +1,72 @@
+# LlamaRS - Native Rust LLM Backend
+> **LlamaCore-RS**: A comprehensive Rust implementation replacing llama.cpp dependencies
+
+[![macOS](https://img.shields.io/badge/macOS-ARM64%20%7C%20x86__64-blue.svg)](https://www.apple.com/macos/)
+[![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
+[![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://isocpp.org/)
+
+## Developer Information
+- **Contact:** [![Email](https://img.shields.io/badge/Email-azabell1993%40gmail.com-blue?logo=gmail)](mailto:azabell1993@gmail.com)  
+- **GitHub:** [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Azabell1993)
+
+For questions, issues, or contributions, please open an issue or pull request on GitHub.
+
+## Project Overview
+
+A macOS-exclusive project converting LLaMa to pure Rust implementation.
+
+This project **completely eliminates external llama.cpp dependency** by implementing a comprehensive mock LLM backend in Rust. Originally developed to solve compilation warnings and linking issues, it has evolved into a standalone, production-ready alternative that maintains full API compatibility while providing superior build reliability.
+
+### Why This Project?
+- **Dependency Hell Solution**: No more complex llama.cpp build configurations
+- **Zero Warnings**: Clean compilation output for professional development
+- **Native Performance**: Direct Rust implementation without C++ overhead
+- **Development Efficiency**: Instant builds without external library compilation
+
+### Key Features
+- **Pure Rust Implementation**: 150+ LLM functions reimplemented from scratch
+- **Zero External Dependencies**: Self-contained with no llama.cpp requirement
+- **Warning-Free Build**: Eliminates all cbindgen and rustc compile warnings
+- **C++ FFI Compatibility**: Drop-in replacement maintaining full API compatibility
+- **Cross-Platform Support**: Native ARM64 (Apple Silicon) and x86_64 builds
+- **Debug Mode**: Conditional compilation with detailed logging and diagnostics
+- **Fast Builds**: Sub-second incremental compilation without external dependencies
+
+### Technical Architecture
+
+![LlamaRS Architecture](llmrust.png)
+
+#### Core System Architecture
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           LlamaRS Ecosystem                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────────┐    ┌──────────────────┐    ┌──────────────────────────┐ │
+│  │   C++ Frontend  │◄──►│  Rust LLM Core   │◄──►│    Rust Extensions       │ │
+│  │   (main.cpp)    │    │  (150+ Mocks)    │    │   • Native Crates        │ │
+│  │                 │    │                  │    │   • FFI Bindings         │ │
+│  │  ┌─────────────┐│    │ ┌──────────────┐ │    │   • Cargo Features       │ │
+│  │  │Debug/Release││    │ │State Manager │ │    │   • Procedural Macros    │ │
+│  │  │Conditional  ││    │ │Memory Pool   │ │    │   • Trait Implementations│ │
+│  │  │Compilation  ││    │ │Token Handler │ │    │                          │ │
+│  │  └─────────────┘│    │ └──────────────┘ │    └──────────────────────────┘ │
+│  └─────────────────┘    └──────────────────┘               │                 │
+│          │                        │                        │                 │
+│          ▼                        ▼                        ▼                 │
+│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────┐  │
+│  │  CMake Build    │    │   cbindgen FFI   │    │    Performance Layer    │  │
+│  │  System         │    │   Auto Header    │    │   • Zero-Copy Memory    │  │
+│  │                 │    │   Generation     │    │   • SIMD Optimization   │  │
+│  │ ARM64 | x86_64  │    │                  │    │   • Async Processing    │  │
+│  │ Debug | Release │    │  Warning-Free    │    │   • Concurrent Safety   │  │
+│  └─────────────────┘    └──────────────────┘    └─────────────────────────┘  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 # Build & Run Guide
 
 ## Quick Start (Recommended)
