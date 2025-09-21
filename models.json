@@ -1,0 +1,17 @@
+{
+  "default_model": "",
+  "model_directory": "models",
+  "fallback_models": [
+    "deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
+  ],
+  "model_preferences": {
+    "prefer_quantized": true,
+    "max_file_size_gb": 20,
+    "min_file_size_mb": 100
+  },
+  "environment_variables": {
+    "model_path_var": "MODEL_PATH",
+    "default_model_var": "DEFAULT_MODEL",
+    "models_dir_var": "MODELS_DIR"
+  }
+}

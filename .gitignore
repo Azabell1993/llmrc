@@ -26,3 +26,6 @@ cpp-app/build/
 *.class
 *.jar
 *.a
+
+# gguf model files
+/models/*.gguf

@@ -18,27 +18,115 @@ BOLD=$'\033[1m'; GRN=$'\033[32m'; RED=$'\033[31m'; YLW=$'\033[33m'; CYA=$'\033[3
 
 usage() {
   cat <<USAGE
-Usage: $0 [build|run|clean|reconfig|fresh|debug] <--arm64|--x86_64> [additional_args...]
-  build     Configure and build with CMake (Rust build is triggered inside CMake)
-  debug     Build with debug output enabled (_DEBUG flag)
-  run       Run the built binary (pass additional args after arch flag)
-  clean     Clean CMake build dir + Rust targets (clean-all)
-  reconfig  Force reconfigure
-  fresh     Remove build dir and reconfigure from scratch
-  --arm64   Force build for Apple Silicon (Rust + CMake)
-  --x86_64  Force build for Intel (Rust + CMake)
+${BOLD}${CYA}LLM Rust - Comprehensive Build & Model Management System${RST}
+${BOLD}===========================================================${RST}
 
-Examples:
-  $0 build --arm64
-  $0 debug --arm64                # Build with debug output
-  $0 run --arm64
-  $0 run --arm64 llm              # Run with 'llm' argument
-  $0 run --arm64 arg1 arg2        # Run with multiple arguments
+${BOLD}SYNOPSIS${RST}
+    $0 [COMMAND] <ARCHITECTURE> [ADDITIONAL_ARGS...]
+
+${BOLD}DESCRIPTION${RST}
+    Unified build system for Rust-based LLM backend with GGUF model support.
+    Combines Rust static libraries with C++ frontend, featuring dynamic model
+    discovery and configuration management.
+
+${BOLD}COMMANDS${RST}
+    ${GRN}build${RST}     Configure and build with CMake (Rust build triggered automatically)
+               Creates optimized release binary with full GGUF support
+    
+    ${GRN}debug${RST}     Build with debug output enabled (_DEBUG flag)
+               Enables verbose logging and debug symbols for development
+    
+    ${GRN}run${RST}       Run the built binary (pass additional args after arch flag)
+               Execute the LLM system with specified arguments
+    
+    ${GRN}clean${RST}     Clean CMake build dir + Rust targets + output directory
+               Complete cleanup of all build artifacts and cached files
+    
+    ${GRN}reconfig${RST}  Force reconfigure CMake cache
+               Refresh build configuration without removing build directory
+    
+    ${GRN}fresh${RST}     Remove build dir and reconfigure from scratch
+               Nuclear option - complete rebuild from zero state
+
+${BOLD}ARCHITECTURE FLAGS${RST}
+    ${YLW}--arm64${RST}   Build for Apple Silicon (M1/M2/M3) processors
+               Sets: CARGO_BUILD_TARGET=aarch64-apple-darwin
+    
+    ${YLW}--x86_64${RST}  Build for Intel processors
+               Sets: CARGO_BUILD_TARGET=x86_64-apple-darwin
+
+${BOLD}MODEL MANAGEMENT COMMANDS${RST}
+    After building, use these commands with the binary:
+    
+    ${CYA}gguf_list${RST}     List all available GGUF models in models/ directory
+                  Shows model names, file sizes, and validation status
+    
+    ${CYA}config_gen${RST}    Generate dynamic model configuration
+                  Scans models/ and creates models.json with discovered models
+    
+    ${CYA}config_show${RST}   Display current model configuration as JSON
+                  Shows active configuration including environment overrides
+    
+    ${CYA}config_help${RST}   Show environment variable configuration help
+                  Lists all supported environment variables for model management
+
+${BOLD}ENVIRONMENT VARIABLES${RST}
+    ${YLW}MODEL_PATH${RST}        Full path to specific GGUF model file
+    ${YLW}DEFAULT_MODEL${RST}     Filename of default model in models directory  
+    ${YLW}MODELS_DIR${RST}        Path to models directory (default: models)
+    ${YLW}PREFER_QUANTIZED${RST}  Prefer quantized models (true/false, default: true)
+    ${YLW}MAX_FILE_SIZE_GB${RST}  Maximum model file size in GB (default: 20)
+    ${YLW}MIN_FILE_SIZE_MB${RST}  Minimum model file size in MB (default: 100)
+
+${BOLD}EXAMPLES${RST}
+    ${GRN}Basic Build:${RST}
+        $0 build --arm64                    # Build for Apple Silicon
+        $0 debug --x86_64                   # Debug build for Intel
+    
+    ${GRN}Model Management:${RST}
+        $0 run --arm64 gguf_list            # List available models
+        $0 run --arm64 config_gen           # Generate dynamic config
+        $0 run --arm64 config_help          # Show env var help
+    
+    ${GRN}Custom Environment:${RST}
+        MODELS_DIR=/custom/path $0 run --arm64 gguf_list
+        DEFAULT_MODEL=my-model.gguf $0 run --arm64 config_show
+    
+    ${GRN}System Operations:${RST}
+        $0 run --arm64 llm                  # Run LLM system
+        $0 clean --arm64                    # Clean all build artifacts
+        $0 fresh --arm64                    # Complete rebuild
+
+${BOLD}PROJECT STRUCTURE${RST}
+    models/          GGUF model files (.gguf format)
+    models.json      Dynamic model configuration (auto-generated)
+    rustlib/         Rust backend implementation
+    cpp-app/         C++ frontend application
+    output/          Build artifacts and executables
+
+${BOLD}NOTES${RST}
+    • Always specify architecture flag (--arm64 or --x86_64)
+    • Use 'clean' before switching architectures
+    • GGUF models must be placed in models/ directory
+    • Configuration is auto-discovered at runtime
+    • Environment variables override JSON configuration
+
+${BOLD}VERSION & COMPATIBILITY${RST}
+    Target: macOS ARM64 (Apple Silicon) and Intel x86_64
+    Rust: Latest stable (edition 2021)
+    CMake: 3.15+ required
+    Models: GGUF format support
 USAGE
 }
 
+# -------- Early help handling --------
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || "${1:-}" == "help" ]]; then
+  usage; exit 0
+fi
+
 # -------- Parse args (command and arch required, additional args optional) --------
 cmd="${1:-}"; arch_flag="${2:-}"
+
 if [[ -z "${cmd}" || -z "${arch_flag}" ]]; then
   echo "${RED}✘ Missing required arguments.${RST}"; usage; exit 1
 fi

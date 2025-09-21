@@ -1,6 +1,11 @@
 language = "C"
 include_guard = "LLM_RUST_H"
 pragma_once = true
+cpp_compat = true
+
+[export]
+prefix = ""
+item_types = ["constants", "globals", "enums", "structs", "unions", "typedefs", "opaque", "functions"]
 
 # Suppress cbindgen warnings for internal variables
 [parse]

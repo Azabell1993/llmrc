@@ -37,6 +37,10 @@ inline int call_rsprintln(int argc, char* argv[]) {
         std::string log_msg2 = std::string(__func__) + ": Starting full LLM system";
         rs_log_info(log_msg2.c_str());
 
+        rs_log_info("📋 Listing GGUF Models");
+        int model_count = list_gguf_models();
+        rs_log_info(("Found " + std::to_string(model_count) + " GGUF models").c_str());
+        
         int result = rust_entry(argc, argv);
         rs_log_info("LLM system execution completed");
         return result;
@@ -47,7 +51,6 @@ inline int call_rsprintln(int argc, char* argv[]) {
         rs_log_info("Running in basic mode - no LLM system execution");
     }
 
-#ifdef _DEBUG
     rs_log_debug("Fetching CPU info from Rust...");
     CpuInfo info{};
     if (rust_get_cpu_info(&info)) {
@@ -63,7 +66,6 @@ inline int call_rsprintln(int argc, char* argv[]) {
     } else {
         rs_log_error("Failed to get CPU info from Rust");
     }
-#endif
 
     char brand_buf[64] = {0};
     size_t n = rust_get_cpu_brand(reinterpret_cast<uint8_t*>(brand_buf), sizeof(brand_buf));

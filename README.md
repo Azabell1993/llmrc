@@ -1,215 +1,346 @@
-# LlamaRS - Native Rust LLM Backend
-> **LlamaCore-RS**: A comprehensive Rust implementation replacing llama.cpp dependencies
+# 🦀 LLM Rust - Comprehensive GGUF Model Management System
+> **Advanced Rust-based LLM Backend with Dynamic Model Discovery and Configuration**
 
-[![macOS](https://img.shields.io/badge/macOS-ARM64%20%7C%20x86__64-blue.svg)](https://www.apple.com/macos/)
-[![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
-[![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://isocpp.org/)
+[![macOS](https://img.shields.io/badge/macOS-ARM64%20%7C%20x86__64-success.svg?logo=apple)](https://www.apple.com/macos/)
+[![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg?logo=rust)](https://www.rust-lang.org/)
+[![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg?logo=cplusplus)](https://isocpp.org/)
+[![GGUF](https://img.shields.io/badge/GGUF-Model%20Support-green.svg)](https://github.com/ggerganov/ggml)
+[![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Developer Information
+## 👨‍💻 Developer Information
+- **Developer:** Azabell1993
 - **Contact:** [![Email](https://img.shields.io/badge/Email-azabell1993%40gmail.com-blue?logo=gmail)](mailto:azabell1993@gmail.com)  
-- **GitHub:** [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Azabell1993)
+- **GitHub:** [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Azabell1993/llmrc)
+- **Branch:** `llama-rs`
 
 For questions, issues, or contributions, please open an issue or pull request on GitHub.
 
-## Project Overview
+## 🌟 Project Overview
 
-A macOS-exclusive project converting LLaMa to pure Rust implementation.
+**LLM Rust** is a comprehensive Large Language Model management system designed for macOS, featuring dynamic GGUF model discovery, configuration management, and a powerful build system. This project provides a complete replacement for traditional llama.cpp dependencies while offering superior performance and reliability.
 
-This project **completely eliminates external llama.cpp dependency** by implementing a comprehensive mock LLM backend in Rust. Originally developed to solve compilation warnings and linking issues, it has evolved into a standalone, production-ready alternative that maintains full API compatibility while providing superior build reliability.
+### 🎯 Why Choose LLM Rust?
 
-### Why This Project?
-- **Dependency Hell Solution**: No more complex llama.cpp build configurations
-- **Zero Warnings**: Clean compilation output for professional development
-- **Native Performance**: Direct Rust implementation without C++ overhead
-- **Development Efficiency**: Instant builds without external library compilation
+- **🔧 Zero Configuration Hassles**: Automatic model discovery and configuration
+- **📦 Self-Contained System**: No external llama.cpp dependencies required
+- **⚡ Lightning Fast Builds**: Optimized Rust compilation with minimal overhead
+- **🎛️ Dynamic Configuration**: Runtime environment variable support
+- **🏗️ Professional Build System**: Comprehensive CMake + Cargo integration
+- **🔍 Smart Model Management**: Automatic GGUF validation and metadata extraction
 
-### Key Features
-- **Pure Rust Implementation**: 150+ LLM functions reimplemented from scratch
-- **Zero External Dependencies**: Self-contained with no llama.cpp requirement
-- **Warning-Free Build**: Eliminates all cbindgen and rustc compile warnings
-- **C++ FFI Compatibility**: Drop-in replacement maintaining full API compatibility
-- **Cross-Platform Support**: Native ARM64 (Apple Silicon) and x86_64 builds
-- **Debug Mode**: Conditional compilation with detailed logging and diagnostics
-- **Fast Builds**: Sub-second incremental compilation without external dependencies
+## ✨ Key Features
 
-### Technical Architecture
+### 🚀 **Dynamic Model Management**
+- **Auto-Discovery**: Automatic scanning and validation of GGUF models
+- **Smart Configuration**: Dynamic `models.json` generation based on available models
+- **Environment Integration**: Full environment variable configuration support
+- **Flexible Filtering**: Size-based model filtering and quantization preferences
 
-![LlamaRS Architecture](llmrust.png)
+### 🔧 **Advanced Build System**
+- **Cross-Architecture**: Native ARM64 (Apple Silicon) and x86_64 support
+- **Debug Mode**: Comprehensive logging and debug symbol generation
+- **Clean Operations**: Intelligent build artifact cleanup
+- **Fresh Rebuilds**: Complete environment reset capabilities
 
-#### Core System Architecture
+### 📊 **Model Configuration System**
+```json
+{
+  "default_model": "",
+  "model_directory": "models",
+  "fallback_models": ["auto-discovered"],
+  "model_preferences": {
+    "prefer_quantized": true,
+    "max_file_size_gb": 20,
+    "min_file_size_mb": 100
+  }
+}
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           LlamaRS Ecosystem                                  │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌──────────────────────────┐ │
-│  │   C++ Frontend  │◄──►│  Rust LLM Core   │◄──►│    Rust Extensions       │ │
-│  │   (main.cpp)    │    │  (150+ Mocks)    │    │   • Native Crates        │ │
-│  │                 │    │                  │    │   • FFI Bindings         │ │
-│  │  ┌─────────────┐│    │ ┌──────────────┐ │    │   • Cargo Features       │ │
-│  │  │Debug/Release││    │ │State Manager │ │    │   • Procedural Macros    │ │
-│  │  │Conditional  ││    │ │Memory Pool   │ │    │   • Trait Implementations│ │
-│  │  │Compilation  ││    │ │Token Handler │ │    │                          │ │
-│  │  └─────────────┘│    │ └──────────────┘ │    └──────────────────────────┘ │
-│  └─────────────────┘    └──────────────────┘               │                 │
-│          │                        │                        │                 │
-│          ▼                        ▼                        ▼                 │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────────┐  │
-│  │  CMake Build    │    │   cbindgen FFI   │    │    Performance Layer    │  │
-│  │  System         │    │   Auto Header    │    │   • Zero-Copy Memory    │  │
-│  │                 │    │   Generation     │    │   • SIMD Optimization   │  │
-│  │ ARM64 | x86_64  │    │                  │    │   • Async Processing    │  │
-│  │ Debug | Release │    │  Warning-Free    │    │   • Concurrent Safety   │  │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────────┘  │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
+
+### 🎮 **Command Interface**
+- **Model Listing**: `gguf_list` - Display all available models with metadata
+- **Config Generation**: `config_gen` - Create dynamic configuration files
+- **Config Display**: `config_show` - View current configuration as JSON
+- **Help System**: `config_help` - Environment variable documentation
+
+## 🏗️ System Architecture
+
 ```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          LLM Rust Ecosystem                                    │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌──────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
+│  │   Build System   │◄─►│   Rust LLM Core     │◄─►│     Model Management       │ │
+│  │   • CMake + Cargo│   │   • GGUF Support    │   │   • Auto-Discovery         │ │
+│  │   • Cross-Arch   │   │   • 150+ Functions  │   │   • Dynamic Config         │ │
+│  │   • Debug Mode   │   │   • Mock Backend    │   │   • Environment Variables  │ │
+│  └──────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
+│                                                                                 │
+│  ┌──────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
+│  │   C++ Frontend   │◄─►│   Configuration     │◄─►│        GGUF Models         │ │
+│  │   • CLI Interface│   │   • JSON Config     │   │   • Automatic Validation   │ │
+│  │   • Command Args │   │   • Env Variables   │   │   • Metadata Extraction    │ │
+│  │   • Help System  │   │   • Runtime Setup   │   │   • Smart Filtering        │ │
+│  └──────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **macOS** (ARM64 or x86_64)
+- **Rust** 1.70+ (stable)
+- **CMake** 3.15+
+- **Clang/C++** 17+
+
+### Installation & Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Azabell1993/llmrc.git
+   cd llmrc
+   git checkout llama-rs
+   ```
+
+2. **Place GGUF models:**
+   ```bash
+   mkdir -p models
+   # Copy your .gguf model files to the models/ directory
+   cp your-model.gguf models/
+   ```
+
+3. **Build the system:**
+   ```bash
+   ./build.sh build --arm64    # For Apple Silicon
+   ./build.sh build --x86_64   # For Intel Macs
+   ```
+
+4. **List available models:**
+   ```bash
+   ./build.sh run --arm64 gguf_list
+   ```
+
+## 📖 Usage Guide
+
+### Build System Commands
+
+```bash
+# Basic Operations
+./build.sh build --arm64                    # Build for Apple Silicon  
+./build.sh debug --arm64                    # Debug build with logging
+./build.sh clean --arm64                    # Clean all build artifacts
+./build.sh fresh --arm64                    # Complete rebuild from scratch
+
+# Model Management
+./build.sh run --arm64 gguf_list            # List available models
+./build.sh run --arm64 config_gen           # Generate dynamic config
+./build.sh run --arm64 config_show          # Show current config
+./build.sh run --arm64 config_help          # Environment variable help
+
+# System Operations  
+./build.sh run --arm64 llm                  # Run LLM system
+./build.sh --help                           # Show comprehensive help
+```
+
+### Model Management
+
+#### Automatic Model Discovery
+The system automatically discovers and validates GGUF models in the `models/` directory:
+
+```bash
+# Generate dynamic configuration based on available models
+./build.sh run --arm64 config_gen
+
+# View discovered models and their metadata
+./build.sh run --arm64 gguf_list
+```
+
+**Example Output:**
+```
+[INFO] === Available GGUF Models ===
+[INFO] 1. deepseek-coder-v2-lite-instruct-q4_k_m
+[INFO]    Path: models/deepseek-coder-v2-lite-instruct-q4_k_m.gguf
+[INFO]    Size: 9884.28 MB
+[INFO]    Valid: true
+```
+
+## ⚙️ Configuration System
+
+### Environment Variables
+
+The system supports comprehensive environment variable configuration:
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `MODEL_PATH` | Full path to specific GGUF model file | - | `/path/to/model.gguf` |
+| `DEFAULT_MODEL` | Filename of default model in models directory | - | `llama-2-7b-chat.q4_0.gguf` |
+| `MODELS_DIR` | Path to models directory | `models` | `/custom/models` |
+| `PREFER_QUANTIZED` | Prefer quantized models | `true` | `false` |
+| `MAX_FILE_SIZE_GB` | Maximum model file size in GB | `20` | `50` |
+| `MIN_FILE_SIZE_MB` | Minimum model file size in MB | `100` | `500` |
+
+### Configuration Examples
+
+```bash
+# Use specific model
+export MODEL_PATH="/path/to/my-model.gguf"
+./build.sh run --arm64 config_show
+
+# Set default model in models directory
+export DEFAULT_MODEL="deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
+./build.sh run --arm64 gguf_list
+
+# Custom models directory
+export MODELS_DIR="/custom/path/to/models"
+./build.sh run --arm64 config_gen
+
+# Customize preferences
+export PREFER_QUANTIZED=false MAX_FILE_SIZE_GB=50
+./build.sh run --arm64 config_show
+```
+
+### Dynamic Configuration File
+
+The system generates `models.json` automatically:
+
+```json
+{
+  "default_model": "",
+  "model_directory": "models", 
+  "fallback_models": [
+    "deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
+  ],
+  "model_preferences": {
+    "prefer_quantized": true,
+    "max_file_size_gb": 20,
+    "min_file_size_mb": 100
+  },
+  "environment_variables": {
+    "model_path_var": "MODEL_PATH",
+    "default_model_var": "DEFAULT_MODEL", 
+    "models_dir_var": "MODELS_DIR"
+  }
+}
+```
+
+## 📁 Project Structure
+
+```
+llm_rust/
+├── 📁 models/                      # GGUF model files (.gguf format)
+│   └── deepseek-coder-v2-lite-instruct-q4_k_m.gguf
+├── 📄 models.json                  # Dynamic model configuration (auto-generated)
+├── 📁 rustlib/                     # Rust backend implementation
+│   ├── 📁 src/
+│   │   ├── lib.rs                  # Main library entry point
+│   │   └── 📁 common/
+│   │       ├── log.rs              # Logging and utility functions
+│   │       └── model.rs            # GGUF model management system
+│   └── Cargo.toml                  # Rust dependencies and configuration
+├── 📁 cpp-app/                     # C++ frontend application
+│   ├── 📁 src/
+│   │   └── main.cpp                # Main application entry point
+│   ├── 📁 include/
+│   │   ├── llm_rust.h              # Auto-generated C header (cbindgen)
+│   │   ├── cmd_args.h              # Command-line argument parsing
+│   │   └── rust_utils.h            # Rust utility function declarations
+│   └── CMakeLists.txt              # CMake build configuration
+├── 📁 output/                      # Build artifacts and executables
+│   ├── 📁 bin/
+│   │   └── llmrcpp_app             # Final executable
+│   ├── 📁 lib/                     # Static libraries
+│   ├── 📁 obj/                     # Object files
+│   └── 📁 include/                 # Generated headers
+├── 🔧 build.sh                     # Comprehensive build system
+├── 🚀 run.sh                       # Quick run script
+├── ⚙️ cbindgen.toml                # C header generation configuration
+└── 📖 README.md                    # This documentation
+```
+
+## 🔧 Advanced Features
+
+### Debug Mode with Comprehensive Logging
+```bash
+./build.sh debug --arm64
+# Enables:
+# - Verbose compilation output
+# - Runtime debug logging  
+# - Debug symbols for debugging
+# - Memory safety checks
+```
+
+### Cross-Architecture Building
+```bash
+# Apple Silicon (M1/M2/M3)
+./build.sh build --arm64
+export CARGO_BUILD_TARGET=aarch64-apple-darwin
+
+# Intel Macs
+./build.sh build --x86_64  
+export CARGO_BUILD_TARGET=x86_64-apple-darwin
+```
+
+### Model Filtering and Preferences
+```bash
+# Filter models by size
+export MAX_FILE_SIZE_GB=10 MIN_FILE_SIZE_MB=500
+./build.sh run --arm64 config_gen
+
+# Prefer non-quantized models
+export PREFER_QUANTIZED=false
+./build.sh run --arm64 gguf_list
+```
+
+## 🔍 Development & Debugging
+
+### Build System Features
+- **Incremental Builds**: Only rebuilds changed components
+- **Clean Operations**: `clean`, `reconfig`, `fresh` options
+- **Warning-Free**: Eliminates all compiler warnings
+- **Cross-Platform**: ARM64 and x86_64 support
+
+### Rust Implementation Details
+- **150+ Mock Functions**: Complete LLM API compatibility
+- **Memory Management**: Safe Rust memory handling
+- **FFI Safety**: Proper C++ integration without undefined behavior
+- **Modular Design**: Separate logging, model management, and core systems
+
+### C++ Frontend Features  
+- **Command-Line Interface**: Comprehensive argument parsing
+- **Error Handling**: Graceful error reporting and recovery
+- **Help System**: Built-in documentation and usage examples
+
+## 🤝 Contributing
+
+### Development Workflow
+1. **Fork the repository** and create a feature branch
+2. **Make changes** following Rust and C++ best practices
+3. **Test thoroughly** on both ARM64 and x86_64
+4. **Update documentation** including README.md changes
+5. **Submit pull request** with detailed description
+
+### Code Standards
+- **Rust**: Follow `rustfmt` and `clippy` recommendations
+- **C++**: Use C++17 standards with RAII principles
+- **Documentation**: Maintain comprehensive inline comments
+- **Testing**: Include both unit and integration tests
+
+## 📝 Version Information
+
+- **Current Version**: Development Branch `llama-rs`
+- **Rust Edition**: 2021
+- **C++ Standard**: C++17
+- **CMake Requirement**: 3.15+
+- **Target Platforms**: macOS ARM64, macOS x86_64
+
+## 🔗 Related Projects
+
+- [GGML](https://github.com/ggerganov/ggml) - Machine learning tensor library
+- [llama.cpp](https://github.com/ggerganov/llama.cpp) - Original C++ LLaMA implementation  
+- [Rust ML](https://www.arewelearningyet.com/) - Rust machine learning ecosystem
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-# Build & Run Guide
-
-## Quick Start (Recommended)
-
-```bash
-./run.sh                    # release + arm64
-./run.sh debug              # debug + arm64  
-./run.sh release x86_64     # release + x86_64
-./run.sh debug x86_64       # debug + x86_64
-```
-
-## Manual Build/Run
-
-### Development Mode (Debug)
-```bash
-./build.sh debug            # Debug build (default: arm64)
-./build.sh debug x86_64     # Debug build (Intel)
-./output/bin/cpp_app llm    # Run llm version
-./output/bin/cpp_app llmrust # Run llmrust version
-```
-
-### Release Mode
-```bash
-./build.sh                  # Release build (default: arm64)  
-./build.sh x86_64           # Release build (Intel)
-./output/bin/cpp_app llm    # Run llm version
-./output/bin/cpp_app llmrust # Run llmrust version
-```
-
-### run.sh Usage
-```bash
-# Basic usage (Release mode)
-./run.sh                    # clean + build + run with llm (arm64)
-./run.sh x86_64             # clean + build + run with llm (Intel)
-
-# Debug mode usage  
-./run.sh debug              # clean + debug + run with llm (arm64)
-./run.sh debug x86_64       # clean + debug + run with llm (Intel)
-
-# Explicit release mode usage
-./run.sh release            # clean + build + run with llm (arm64)
-./run.sh release x86_64     # clean + build + run with llm (Intel)
-
-# Help
-./run.sh -h                 # Show usage
-./run.sh --help             # Show usage
-```
-
-## One-Command Testing
-1) Debug Mode
->  % ./build.sh clean --arm64 && ./build.sh debug --arm64 && ./build.sh run --arm64 llm
-
-2) Release Mode
->  % ./build.sh clean --arm64 && ./build.sh build --arm64 && ./build.sh run --arm64 llm
-
-## Build Output Example
-
-```
-==> Building project [arm64]...
-[ 50%] Building CXX object CMakeFiles/cpp_objs.dir/src/hello.cpp.o
-[ 50%] Building Rust crate: llm_rust
-[ 50%] Generating C header via cbindgen: .../output/include/llm_rust
-  Compiling llm_rust v0.1.0 (.../rustlib)
-   Finished `release` profile [optimized] target(s) in 0.12s
-Export rust staticlib -> .../output/lib
-[100%] Linking CXX executable .../output/bin/llmrcpp_app
-[100%] Built target cpp_app
-```
-
-## Command Guide
-
-### Simple Method (run.sh)
-| Task                     | Command             | Description                    |
-|--------------------------|---------------------|--------------------------------|
-| Full Pipeline (Default) | `./run.sh`          | clean + build + run llm (arm64) |
-| Intel Architecture Run  | `./run.sh x86_64`   | clean + build + run llm (x86_64) |
-
-### Detailed Control (build.sh)
-| Task         | Command (Apple Silicon)        | Command (Intel)            |
-|--------------|-------------------------------|----------------------------|
-| Build        | `./build.sh build --arm64`    | `./build.sh build --x86_64`|
-| Run (Basic)  | `./build.sh run --arm64`      | `./build.sh run --x86_64`  |
-| Run (LLM)    | `./build.sh run --arm64 llm`  | `./build.sh run --x86_64 llm`|
-| Clean        | `./build.sh clean --arm64`    | `./build.sh clean --x86_64`|
-| Debug        | `./build.sh debug --arm64`    | `./build.sh debug --x86_64` |
-| Reset        | `./build.sh fresh --arm64`    | `./build.sh fresh --x86_64`|
-| Force Reset  | `./build.sh reconfig --arm64` | `./build.sh reconfig --x86_64`|
-
-> **Tip:** Always clean before build when switching architectures or updating Rust code.
-
----
-
-## Usage
-
-### run.sh (Simple Pipeline)
-```
-Usage: ./run.sh [arch]
-  arch: arm64 (default) or x86_64
-
-Examples:
-  ./run.sh          # clean + build + run with llm (arm64)
-  ./run.sh arm64     # explicitly specify arm64
-  ./run.sh x86_64    # run on Intel architecture
-```
-
-### build.sh (Detailed Control)
-```
-Usage: ./build.sh [build|run|clean|reconfig|fresh] <--arm64|--x86_64> [additional_args...]
-  build     Configure and build with CMake (Rust build is triggered inside CMake)
-  run       Run the built binary (pass additional args after arch flag)
-  clean     Clean CMake build dir + Rust targets (clean-all)
-  debug     Build with debug symbols and output for troubleshooting
-  reconfig  Force reconfigure
-  fresh     Remove build dir and reconfigure from scratch
-  --arm64   Force build for Apple Silicon (Rust + CMake)
-  --x86_64  Force build for Intel (Rust + CMake)
-
-Examples:
-  ./build.sh build --arm64
-  ./build.sh debug --arm64                # Build with debug output
-  ./build.sh run --arm64
-  ./build.sh run --arm64 llm              # Run with 'llm' argument
-  ./build.sh run --arm64 arg1 arg2        # Run with multiple arguments
-```
-
----
-
-> **Tip:** Always clean before build when switching architectures or updating Rust code.
-
-## Additional Information
-
-### Recommended Workflows
-1. **General Use**: `./run.sh` - All processes run automatically
-2. **During Development**: Run `./build.sh clean --arm64 && ./build.sh build --arm64` then test
-3. **Debugging**: Test with various arguments using `./build.sh run --arm64 [args...]`
-
-### Key Information
-- **Build Output**: Generated in `output/bin/llmrcpp_app`
-- **Architecture**: arm64 (Apple Silicon) default, x86_64 supported
-- **Integrated Environment**: Hybrid project combining C++ and Rust
-- **LLM Features**: Special Rust LLM function calls available with `llm` argument
-
-### Troubleshooting
-- When changing architecture: Always clean before build
-- When updating Rust code: Clean before build recommended
-- On build errors: Complete reset with `./build.sh fresh --arm64`

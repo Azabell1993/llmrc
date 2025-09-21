@@ -24,6 +24,7 @@ typedef struct {
     bool run_modoe;
     bool show_help;
     bool llm_mode;
+    bool gguf_list;
     char bench_mode;
 } CmdArgs;
 
@@ -49,10 +50,12 @@ static CmdArgs parse_args(int argc, char* argv[]) {
             }
         } else if (strcmp(argv[i], "llm") == 0 || strcmp(argv[i], "--llm") == 0) {
             args.llm_mode = true;
-        } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "/?") == 0) {
+                } else if (strcmp(argv[i], "gguf_list") == 0 || strcmp(argv[i], "gguf-list") == 0 || strcmp(argv[i], "--gguf-list") == 0) {
+            // GGUF list mode - handled in main.cpp else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "/?") == 0) {
             args.show_help = true;
         } else {
             std::cerr << "Unknown argument: " << argv[i] << std::endl;
+            std::cerr << "Use --help to see available options." << std::endl;
             args.show_help = true;
         }
     }
