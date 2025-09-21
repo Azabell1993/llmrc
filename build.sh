@@ -114,6 +114,7 @@ final_guide() {
   echo "${BOLD}Next steps ${RST}"
   cat <<EOF
 ✔ To rebuild:   $0 build ${arch_flag}
+✔ To debug:     $0 debug ${arch_flag}
 ✔ To run:       $0 run ${arch_flag}
 ✔ To clean:     $0 clean ${arch_flag}
 ✔ To reconfig:  $0 reconfig ${arch_flag}

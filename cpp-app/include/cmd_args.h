@@ -23,6 +23,7 @@ typedef struct log_node {
 typedef struct {
     bool run_modoe;
     bool show_help;
+    bool llm_mode;
     char bench_mode;
 } CmdArgs;
 
@@ -35,7 +36,7 @@ static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 #define RESOURCE_PATH "./resources"
 
 static CmdArgs parse_args(int argc, char* argv[]) {
-    CmdArgs args = {false, false, 0};
+    CmdArgs args = {false, false, false, 0};
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--run") == 0 || strcmp(argv[i], "-r") == 0) {
             args.run_modoe = true;
@@ -46,6 +47,8 @@ static CmdArgs parse_args(int argc, char* argv[]) {
                 std::cerr << "Error: --bench requires a mode argument." << std::endl;
                 args.show_help = true;
             }
+        } else if (strcmp(argv[i], "llm") == 0 || strcmp(argv[i], "--llm") == 0) {
+            args.llm_mode = true;
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "/?") == 0) {
             args.show_help = true;
         } else {
