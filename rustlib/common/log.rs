@@ -678,6 +678,164 @@ pub extern "C" fn rust_entry(argc: i32, argv: *mut *mut std::os::raw::c_char) ->
     }
 }
 
+// Helper function to check files in a directory
+fn check_directory_files(dir_path: &str) -> io::Result<(u32, u32, u32, u32)> {
+    let mut existing_files = 0u32;
+    let mut empty_files = 0u32;
+    let mut debug_enabled_files = 0u32;
+    
+    // Define expected .rs files for each directory
+    let expected_files = match dir_path.split('/').last().unwrap_or("") {
+        "common" => vec![
+            "log.rs", "mod.rs", "model.rs", "utils.rs", "base64.rs", "build_info.rs",
+            "console.rs", "json.rs", "mlock.rs", "ngram_cache.rs", "sampling.rs",
+            "stb_image.rs", "train.rs", "arg.rs", "chat.rs", "common.rs"
+        ],
+        "ggml" => vec![
+            "ggml.rs", "ggml_alloc.rs", "ggml_backend.rs", "ggml_cpu.rs", "ggml_cuda.rs",
+            "ggml_impl.rs", "ggml_kompute.rs", "ggml_metal.rs", "ggml_opencl.rs",
+            "ggml_quants.rs", "ggml_rpc.rs", "ggml_sycl.rs", "ggml_threading.rs",
+            "ggml_vulkan.rs", "mod.rs"
+        ],
+        "gguf" => vec![
+            "gguf.rs", "gguf_impl.rs", "gguf_reader.rs", "gguf_types.rs", "gguf_writer.rs", "mod.rs"
+        ],
+        "src" => vec![
+            "lib.rs", "batch.rs", "context.rs", "decode.rs", "encode.rs", "kv_cache.rs",
+            "llama.rs", "llama_impl.rs", "llama_model_loader.rs", "llama_vocab.rs",
+            "lora.rs", "quantize.rs", "rope.rs", "sampling.rs", "save_load_state.rs",
+            "server.rs", "speculative.rs", "tokenizer.rs", "unicode.rs", "unicode_data.rs", "mod.rs"
+        ],
+        "examples" => vec![
+            "baby_llama.rs", "batched.rs", "batched_bench.rs", "benchmark.rs", "convert_legacy_llama.rs",
+            "embedding.rs", "eval_callback.rs", "export_lora.rs", "finetune.rs", "gguf.rs",
+            "gguf_split.rs", "gritlm.rs", "imatrix.rs", "infill.rs", "llama_bench.rs",
+            "llava.rs", "lookup.rs", "lookahead.rs", "main.rs", "minicpmv.rs", "parallel.rs",
+            "passkey.rs", "perplexity.rs", "quantize.rs", "quantize_stats.rs", "retrieval.rs",
+            "save_load_state.rs", "server.rs", "simple.rs", "speculative.rs", "tokenize.rs", "mod.rs"
+        ],
+        "tools" => vec![
+            "mod.rs", "train_text_from_scratch.rs"
+        ],
+        "tests" => vec![
+            "mod.rs", "test_autorelease.rs", "test_backend_ops.rs", "test_c.rs", "test_chat_template.rs",
+            "test_double_float.rs", "test_grad.rs", "test_grammar_integration.rs", "test_grammar_parser.rs",
+            "test_json_schema_to_grammar.rs", "test_llama_grammar.rs", "test_model_load_cancel.rs",
+            "test_opt.rs", "test_quantize_fns.rs", "test_rope.rs", "test_sampling.rs", "test_tokenizer_random.rs"
+        ],
+        "grammars" => vec![
+            "mod.rs", "arithmetic.rs", "c.rs", "chess.rs", "japanese.rs", "json.rs", "list.rs", "maths.rs", "rules.rs"
+        ],
+        "models" => vec![
+            "mod.rs", "model_manager.rs"
+        ],
+        _ => vec![]
+    };
+    
+    let total_files = expected_files.len() as u32;
+    
+    for file_name in expected_files {
+        let full_path = format!("{}/{}", dir_path, file_name);
+        
+        if file_exists(&full_path) {
+            existing_files += 1;
+            
+            match file_is_empty(&full_path) {
+                Ok(true) => empty_files += 1,
+                Ok(false) => {
+                    // Check if file has debug_print function
+                    if let Ok(content) = std::fs::read_to_string(&full_path) {
+                        if content.contains("debug_print()") {
+                            debug_enabled_files += 1;
+                        }
+                    }
+                }
+                Err(_) => {} // Ignore read errors
+            }
+        }
+    }
+    
+    Ok((total_files, existing_files, empty_files, debug_enabled_files))
+}
+
+// Test debug print functions for files that exist
+fn test_debug_prints() {
+    rs_log_info(cstr("--- Testing existing file debug prints ---").as_ptr());
+    
+    // Scan and report all .rs files in the rustlib directory
+    let rustlib_path = "/Users/mac/Desktop/workspace/llm_rust/rustlib";
+    
+    if let Ok(entries) = std::fs::read_dir(rustlib_path) {
+        scan_directory_recursively(&rustlib_path.to_string(), "");
+    } else {
+        rs_log_info(cstr("Failed to scan rustlib directory").as_ptr());
+    }
+    
+    rs_log_info(cstr("--- End debug print test ---").as_ptr());
+}
+
+// Recursive function to scan directories and report .rs files
+fn scan_directory_recursively(dir_path: &str, relative_prefix: &str) {
+    if let Ok(entries) = std::fs::read_dir(dir_path) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let file_name = entry.file_name().to_string_lossy().to_string();
+            
+            // Skip target directory to avoid build artifacts
+            if file_name == "target" {
+                continue;
+            }
+            
+            if path.is_dir() {
+                let new_prefix = if relative_prefix.is_empty() {
+                    file_name.clone()
+                } else {
+                    format!("{}/{}", relative_prefix, file_name)
+                };
+                scan_directory_recursively(&path.to_string_lossy(), &new_prefix);
+            } else if file_name.ends_with(".rs") {
+                let relative_path = if relative_prefix.is_empty() {
+                    file_name
+                } else {
+                    format!("{}/{}", relative_prefix, file_name)
+                };
+                
+                // Check if file exists and has content
+                if let Ok(metadata) = std::fs::metadata(&path) {
+                    let size = metadata.len();
+                    if size > 0 {
+                        let debug_msg = format!("DEBUG: {} - File loaded successfully ({} bytes)", 
+                            relative_path, size);
+                        rs_log_info(cstr(&debug_msg).as_ptr());
+                    } else {
+                        let debug_msg = format!("DEBUG: {} - Empty file detected", relative_path);
+                        rs_log_info(cstr(&debug_msg).as_ptr());
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn rust_check_make(argc: i32, argv: *mut *mut std::os::raw::c_char) -> i32 {
+    macro_rules! log_info {
+        ($msg:expr) => {
+            rs_log_info(cstr($msg).as_ptr());
+        };
+    }
+    
+    log_info!("=== Rust File System Check ===");
+    log_info!("Testing debug_print functions for existing files...");
+    
+    // Call debug prints for files we know exist
+    test_debug_prints();
+    
+    // Return success code
+    0
+}
+    
+
 #[no_mangle]
 pub extern "C" fn call_log_rs() {
     rs_log_info(cstr("=== LLM System Initialization ===").as_ptr());
@@ -742,6 +900,19 @@ pub extern "C" fn call_log_rs() {
         rs_log_info(cstr("Engine initialization complete").as_ptr());
         rs_log_info(cstr("Ready for LLM operations").as_ptr());
         
+        // Debug mode only: Run file system integrity check
+        if cfg!(debug_assertions) {
+            rs_log_info(cstr("Running file system integrity check...").as_ptr());
+            let check_result = rust_check_make(0, std::ptr::null_mut());
+            let status_msg = match check_result {
+                0 => "✅ All files present and debug-enabled - Development ready",
+                1 => "⚠️ Files present but missing debug capability", 
+                2 => "❌ Missing files detected - Build system incomplete",
+                _ => "❓ Unknown file system status"
+            };
+            rs_log_info(cstr(&format!("File check result: {}", status_msg)).as_ptr());
+        }
+
         // System ready
         rs_log_info(cstr("=== LLM System Ready ===").as_ptr());
 

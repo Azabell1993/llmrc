@@ -58,25 +58,41 @@ function(add_rust_staticlib TARGET_NAME CRATE_DIR)
   file(GLOB_RECURSE RUST_SOURCES CONFIGURE_DEPENDS
      "${CRATE_DIR}/src/*.rs" "${CRATE_DIR}/build.rs" )
 
+  # Determine build profile and output path
+  if(ENABLE_DEBUG_OUTPUT OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(RUST_PROFILE "debug")
+  else()
+    set(RUST_PROFILE "release")
+  endif()
+
   # Determine output path according to CARGO_BUILD_TARGET
   if(DEFINED ENV{CARGO_BUILD_TARGET} AND NOT "$ENV{CARGO_BUILD_TARGET}" STREQUAL "")
   set(RUST_TRIPLE "$ENV{CARGO_BUILD_TARGET}")
-  set(RUST_LIB "${CRATE_DIR}/target/${RUST_TRIPLE}/release/lib${TARGET_NAME}.a")
+  set(RUST_LIB "${CRATE_DIR}/target/${RUST_TRIPLE}/${RUST_PROFILE}/lib${TARGET_NAME}.a")
   else()
-  set(RUST_LIB "${CRATE_DIR}/target/release/lib${TARGET_NAME}.a")
+  set(RUST_LIB "${CRATE_DIR}/target/${RUST_PROFILE}/lib${TARGET_NAME}.a")
   endif()
 
   # cbindgen header (generated directly to output/include)
   set(GEN_HEADER  "${OUTPUT_INC}/${TARGET_NAME}")
 
+  # Determine Rust build mode based on CMake build type
+  if(ENABLE_DEBUG_OUTPUT OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(RUST_BUILD_FLAGS "")
+    set(RUST_BUILD_COMMENT "Building Rust crate (debug): ${TARGET_NAME}")
+  else()
+    set(RUST_BUILD_FLAGS "--release")
+    set(RUST_BUILD_COMMENT "Building Rust crate (release): ${TARGET_NAME}")
+  endif()
+
   add_custom_command(
   OUTPUT "${RUST_LIB}"
   COMMAND ${CMAKE_COMMAND} -E env CARGO_BUILD_TARGET=$ENV{CARGO_BUILD_TARGET}
-      "${CARGO}" build --release --manifest-path "${CRATE_DIR}/Cargo.toml"
+      "${CARGO}" build ${RUST_BUILD_FLAGS} --manifest-path "${CRATE_DIR}/Cargo.toml"
   WORKING_DIRECTORY "${CRATE_DIR}"
   DEPENDS ${RUST_SOURCES} "${CRATE_DIR}/Cargo.toml"
   BYPRODUCTS "${RUST_LIB}"
-  COMMENT "Building Rust crate: ${TARGET_NAME}"
+  COMMENT "${RUST_BUILD_COMMENT}"
   VERBATIM
   )
 

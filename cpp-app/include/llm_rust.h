@@ -1403,6 +1403,17 @@ void print_usage(int argc, char **argv);
 int32_t rust_entry(int32_t argc, char **argv);
 
 /**
+ * @brief Check and make necessary preparations
+ * 
+ * Performs pre-execution checks and setup based on command-line arguments.
+ * 
+ * @param[in] argc Argument count
+ * @param[in] argv Argument vector
+ * @return Status code (0 for success, non-zero for error)
+ */
+int32_t rust_check_make(int32_t argc, char **argv);
+
+/**
  * @brief Call Rust logging system
  * 
  * Invokes the Rust logging system initialization and setup.

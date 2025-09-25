@@ -16,6 +16,7 @@ extern void rs_log_info(const char*);
 extern void rs_log_debug(const char*);
 extern void rs_log_error(const char*);
 extern int rust_entry(int argc, char* argv[]);
+extern int rust_check_make(int argc, char* argv[]);
 
 /**
  * @brief Call Rust println function

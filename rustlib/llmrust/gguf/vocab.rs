@@ -1,0 +1,6 @@
+// gguf/vocab.rs - Auto-generated debug file
+#![allow(dead_code)]
+
+pub fn debug_print() {
+    println!("DEBUG: gguf/vocab.rs - File loaded successfully");
+}
