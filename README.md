@@ -9,7 +9,7 @@
 [![GGUF](https://img.shields.io/badge/GGUF-Model%20Support-green.svg)](https://github.com/ggerganov/ggml)
 [![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## 👨‍💻 Developer Information
+## Developer Information
 - **Developer:** Azabell1993
 - **Contact:** [![Email](https://img.shields.io/badge/Email-azabell1993%40gmail.com-blue?logo=gmail)](mailto:azabell1993@gmail.com)  
 - **GitHub:** [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Azabell1993/llmrc)
@@ -17,34 +17,41 @@
 
 For questions, issues, or contributions, please open an issue or pull request on GitHub.
 
-## 🌟 Project Overview
+## Project Overview
 
 **LLM Rust** is a comprehensive Large Language Model management system designed for macOS, featuring dynamic GGUF model discovery, configuration management, and a powerful build system. This project provides a complete replacement for traditional llama.cpp dependencies while offering superior performance and reliability.
 
-### 🎯 Why Choose LLM Rust?
+### Why Choose LLM Rust?
 
-- **🔧 Zero Configuration Hassles**: Automatic model discovery and configuration
-- **📦 Self-Contained System**: No external llama.cpp dependencies required
-- **⚡ Lightning Fast Builds**: Optimized Rust compilation with minimal overhead
-- **🎛️ Dynamic Configuration**: Runtime environment variable support
-- **🏗️ Professional Build System**: Comprehensive CMake + Cargo integration
-- **🔍 Smart Model Management**: Automatic GGUF validation and metadata extraction
+- **Zero Configuration Hassles**: Automatic model discovery and configuration
+- **Self-Contained System**: No external llama.cpp dependencies required
+- **Lightning Fast Builds**: Optimized Rust compilation with minimal overhead
+- **Dynamic Configuration**: Runtime environment variable support
+- **Professional Build System**: Comprehensive CMake + Cargo integration
+- **Smart Model Management**: Automatic GGUF validation and metadata extraction
 
-## ✨ Key Features
+## Key Features
 
-### 🚀 **Dynamic Model Management**
+### Dynamic Model Management
 - **Auto-Discovery**: Automatic scanning and validation of GGUF models
 - **Smart Configuration**: Dynamic `models.json` generation based on available models
 - **Environment Integration**: Full environment variable configuration support
 - **Flexible Filtering**: Size-based model filtering and quantization preferences
 
-### 🔧 **Advanced Build System**
+### Advanced Build System
 - **Cross-Architecture**: Native ARM64 (Apple Silicon) and x86_64 support
 - **Debug Mode**: Comprehensive logging and debug symbol generation
 - **Clean Operations**: Intelligent build artifact cleanup
 - **Fresh Rebuilds**: Complete environment reset capabilities
 
-### 📊 **Model Configuration System**
+### HTTP API Server
+- **OpenAI Compatible**: Standard REST API endpoints for chat completions
+- **Real-time Logging**: Comprehensive request/response logging with timestamps
+- **Engine Integration**: Periodic metadata transmission and system monitoring
+- **Graceful Shutdown**: Immediate server termination via `/stop` endpoint
+- **Multi-threaded**: Concurrent request handling with thread-safe operations
+
+### Model Configuration System
 ```json
 {
   "default_model": "",
@@ -63,31 +70,39 @@ For questions, issues, or contributions, please open an issue or pull request on
 - **Config Generation**: `config_gen` - Create dynamic configuration files
 - **Config Display**: `config_show` - View current configuration as JSON
 - **Help System**: `config_help` - Environment variable documentation
+- **HTTP API Server**: `llm run` - Start HTTP API server with real-time logging and graceful shutdown
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                          LLM Rust Ecosystem                                      │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  ┌──────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
-│  │   Build System   │◄─►│   Rust LLM Core     │◄─►│     Model Management       │ │
-│  │   • CMake + Cargo│   │   • GGUF Support    │   │   • Auto-Discovery         │ │
-│  │   • Cross-Arch   │   │   • 150+ Functions  │   │   • Dynamic Config         │ │
-│  │   • Debug Mode   │   │   • Mock Backend    │   │   • Environment Variables  │ │
-│  └──────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
-│                                                                                  │
-│  ┌──────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
-│  │   C++ Frontend   │◄─►│   Configuration     │◄─►│        GGUF Models         │ │
-│  │   • CLI Interface│   │   • JSON Config     │   │   • Automatic Validation   │ │
-│  │   • Command Args │   │   • Env Variables   │   │   • Metadata Extraction    │ │
-│  │   • Help System  │   │   • Runtime Setup   │   │   • Smart Filtering        │ │
-│  └──────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│                               LLM Rust Ecosystem                                  │
+├───────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                   │
+│  ┌───────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
+│  │   Build System    │◄─►│   Rust LLM Core     │◄─►│     Model Management       │ │
+│  │   • CMake + Cargo │   │   • GGUF Support    │   │   • Auto-Discovery         │ │
+│  │   • Cross-Arch    │   │   • 150+ Functions  │   │   • Dynamic Config         │ │
+│  │   • Debug Mode    │   │   • Mock Backend    │   │   • Environment Variables  │ │
+│  └───────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
+│                                                                                   │
+│  ┌───────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
+│  │      HTTP API     │◄─►│.    Engine System   │◄─►│    Configuration System    │ │
+│  │   • REST Endpoints│   │   • Metadata Tx     │   │   • JSON Config            │ │
+│  │   • OpenAI Compat │   │   • Async Runtime   │   │   • Env Variables          │ │
+│  │   • Graceful Stop │   │   • Real-time Log   │   │   • Runtime Setup          │ │
+│  └───────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
+│                                                                                   │
+│  ┌───────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
+│  │     C++ Engine    │◄─►│   Logging System    │◄─►│        GGUF Models         │ │
+│  │   • CLI Interface │   │   • Thread-Safe     │   │   • Automatic Validation   │ │
+│  │   • Command Args  │   │   • Multi-Level     │   │   • Metadata Extraction    │ │
+│  │   • Help System   │   │   • Error Tracking  │   │   • Smart Filtering        │ │
+│  └───────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
+└───────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - **macOS** (ARM64 or x86_64)
@@ -122,7 +137,7 @@ For questions, issues, or contributions, please open an issue or pull request on
    ./build.sh run --arm64 gguf_list
    ```
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Build System Commands
 
@@ -139,8 +154,8 @@ For questions, issues, or contributions, please open an issue or pull request on
 ./build.sh run --arm64 config_show          # Show current config
 ./build.sh run --arm64 config_help          # Environment variable help
 
-# System Operations  
-./build.sh run --arm64 llm                  # Run LLM system
+# HTTP API Server Operations  
+./build.sh run --arm64 llm run              # Start HTTP API server with Engine integration
 ./build.sh --help                           # Show comprehensive help
 ```
 
@@ -166,7 +181,48 @@ The system automatically discovers and validates GGUF models in the `models/` di
 [INFO]    Valid: true
 ```
 
-## ⚙️ Configuration System
+### HTTP API Server
+
+Start the comprehensive HTTP API server with Engine integration and real-time logging:
+
+```bash
+./build.sh run --arm64 llm run
+```
+
+**Available Endpoints:**
+- `GET /health` - Server health check
+- `GET /v1/models` - List available models
+- `POST /v1/chat/completions` - Chat completions (OpenAI-compatible)
+- `POST /stop` - Graceful server shutdown
+
+**Server Features:**
+- **Real-time Logging**: All requests and responses logged with timestamps
+- **Engine Integration**: Periodic metadata transmission every 1 second
+- **Graceful Shutdown**: Immediate termination via `/stop` endpoint
+- **Multi-threaded**: Concurrent request handling
+- **OpenAI Compatible**: Standard API format support
+
+**Example Usage:**
+```bash
+# Start the server
+./build.sh run --arm64 llm run
+
+# Health check
+curl http://localhost:8080/health
+
+# List models
+curl http://localhost:8080/v1/models
+
+# Chat completion
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model": "deepseek-coder", "messages": [{"role": "user", "content": "Hello"}]}'
+
+# Stop server
+curl -X POST http://localhost:8080/stop
+```
+
+## Configuration System
 
 ### Environment Variables
 
@@ -207,8 +263,10 @@ The system generates `models.json` automatically:
 
 ```json
 {
+  "engine_port": 18080,
+  "model_path": "models/deepseek-coder-v2-lite-instruct-q4_k_m.gguf",
   "default_model": "",
-  "model_directory": "models", 
+  "model_directory": "models",
   "fallback_models": [
     "deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
   ],
@@ -219,47 +277,13 @@ The system generates `models.json` automatically:
   },
   "environment_variables": {
     "model_path_var": "MODEL_PATH",
-    "default_model_var": "DEFAULT_MODEL", 
+    "default_model_var": "DEFAULT_MODEL",
     "models_dir_var": "MODELS_DIR"
   }
 }
 ```
 
-## 📁 Project Structure
-
-```
-llm_rust/
-├── 📁 models/                      # GGUF model files (.gguf format)
-│   └── deepseek-coder-v2-lite-instruct-q4_k_m.gguf
-├── 📄 models.json                  # Dynamic model configuration (auto-generated)
-├── 📁 rustlib/                     # Rust backend implementation
-│   ├── 📁 src/
-│   │   ├── lib.rs                  # Main library entry point
-│   │   └── 📁 common/
-│   │       ├── log.rs              # Logging and utility functions
-│   │       └── model.rs            # GGUF model management system
-│   └── Cargo.toml                  # Rust dependencies and configuration
-├── 📁 cpp-app/                     # C++ frontend application
-│   ├── 📁 src/
-│   │   └── main.cpp                # Main application entry point
-│   ├── 📁 include/
-│   │   ├── llm_rust.h              # Auto-generated C header (cbindgen)
-│   │   ├── cmd_args.h              # Command-line argument parsing
-│   │   └── rust_utils.h            # Rust utility function declarations
-│   └── CMakeLists.txt              # CMake build configuration
-├── 📁 output/                      # Build artifacts and executables
-│   ├── 📁 bin/
-│   │   └── llmrcpp_app             # Final executable
-│   ├── 📁 lib/                     # Static libraries
-│   ├── 📁 obj/                     # Object files
-│   └── 📁 include/                 # Generated headers
-├── 🔧 build.sh                     # Comprehensive build system
-├── 🚀 run.sh                       # Quick run script
-├── ⚙️ cbindgen.toml                # C header generation configuration
-└── 📖 README.md                    # This documentation
-```
-
-## 🔧 Advanced Features
+## Advanced Features
 
 ### Debug Mode with Comprehensive Logging
 ```bash
@@ -293,7 +317,30 @@ export PREFER_QUANTIZED=false
 ./build.sh run --arm64 gguf_list
 ```
 
-## 🔍 Development & Debugging
+### HTTP API Server Advanced Features
+```bash
+# Start server with custom port (default: 8080)
+./build.sh run --arm64 llm run
+
+# Server automatically includes:
+# - Engine metadata transmission (every 1 second)
+# - Real-time request/response logging
+# - Thread-safe multi-client support
+# - Immediate shutdown capability
+# - OpenAI-compatible API format
+
+# Example API interactions:
+curl http://localhost:8080/health
+curl http://localhost:8080/v1/models
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model": "deepseek-coder", "messages": [{"role": "user", "content": "Hello"}]}'
+
+# Graceful shutdown
+curl -X POST http://localhost:8080/stop
+```
+
+## Development & Debugging
 
 ### Build System Features
 - **Incremental Builds**: Only rebuilds changed components
@@ -312,7 +359,7 @@ export PREFER_QUANTIZED=false
 - **Error Handling**: Graceful error reporting and recovery
 - **Help System**: Built-in documentation and usage examples
 
-## 🤝 Contributing
+## Contributing
 
 ### Development Workflow
 1. **Fork the repository** and create a feature branch
@@ -327,7 +374,7 @@ export PREFER_QUANTIZED=false
 - **Documentation**: Maintain comprehensive inline comments
 - **Testing**: Include both unit and integration tests
 
-## 📝 Version Information
+## Version Information
 
 - **Current Version**: Development Branch `llama-rs`
 - **Rust Edition**: 2021
@@ -335,13 +382,13 @@ export PREFER_QUANTIZED=false
 - **CMake Requirement**: 3.15+
 - **Target Platforms**: macOS ARM64, macOS x86_64
 
-## 🔗 Related Projects
+## Related Projects
 
 - [GGML](https://github.com/ggerganov/ggml) - Machine learning tensor library
 - [llama.cpp](https://github.com/ggerganov/llama.cpp) - Original C++ LLaMA implementation  
 - [Rust ML](https://www.arewelearningyet.com/) - Rust machine learning ecosystem
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 

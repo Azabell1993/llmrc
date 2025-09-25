@@ -34,7 +34,7 @@ case "$MODE" in
     exit 0
     ;;
   *) 
-    echo "❌ Invalid mode: $MODE (use debug or release)"
+    echo "ERROR: Invalid mode: $MODE (use debug or release)"
     echo "   Use --help for usage information"
     exit 1
     ;;
@@ -43,17 +43,17 @@ esac
 # Validate architecture
 case "$ARCH" in
   arm64|x86_64) ARCH_FLAG="--${ARCH}" ;;
-  *) echo "❌ Invalid arch: $ARCH (use arm64 or x86_64)"; exit 1 ;;
+  *) echo "ERROR: Invalid arch: $ARCH (use arm64 or x86_64)"; exit 1 ;;
 esac
 
 # Check if build.sh exists
-[[ -f "$BUILD_SH" ]] || { echo "❌ Missing build.sh"; exit 1; }
+[[ -f "$BUILD_SH" ]] || { echo "ERROR: Missing build.sh"; exit 1; }
 
 # Display mode information
 if [[ "$MODE" == "debug" ]]; then
-  echo "🐛 Debug Mode: Detailed logging enabled"
+  echo "DEBUG Mode: Detailed logging enabled"
 else
-  echo "🚀 Release Mode: Optimized build"
+  echo "RELEASE Mode: Optimized build"
 fi
 
 echo "🧹 Cleaning..."

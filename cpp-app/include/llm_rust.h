@@ -20,6 +20,34 @@
 #include <stdlib.h>
 
 #ifdef __cplusplus
+/**
+ * @brief LLM Rust C++ FFI Interface Header
+ *
+ * This header defines the C-compatible interface for interacting with the LLM Rust backend,
+ * including model/context management, tokenization, sampling, logging, console I/O, GGML backend,
+ * thread pool, adapter/fine-tuning, batch processing, dynamic model management, and system utilities.
+ *
+ * Structures:
+ * - CpuInfo: System CPU information.
+ * - llama_model, llama_context, llama_sampler, llama_vocab, llama_batch, etc.: Opaque handles for model, context, sampler, vocabulary, batch, and backend.
+ * - common_params, llama_model_params, llama_context_params: Configuration for model/context initialization.
+ * - lora_adapter: LoRA adapter configuration.
+ * - token_list: Token sequence container.
+ * - common_init_result: Result of model/context initialization.
+ *
+ * Core Functions:
+ * - Model/context initialization, loading, freeing, and parameter conversion.
+ * - Tokenization, detokenization, and vocabulary queries.
+ * - Text generation sampling and sampler management.
+ * - Batch creation, manipulation, and inference.
+ * - Logging (C++ and Rust), console I/O, and signal handling.
+ * - GGML backend device/registry/thread pool management.
+ * - Adapter and control vector loading/application.
+ * - Dynamic model discovery, configuration, and environment variable management.
+ * - System utilities (CPU info, process priority, system info).
+ *
+ * All functions are C-compatible and designed for FFI use from C++ to Rust.
+ */
 extern "C" {
 #endif // __cplusplus
 
@@ -1285,6 +1313,16 @@ void rs_log_debug(const char *msg);
 void rs_log_trace(const char *msg);
 
 /**
+ * @brief Enable or disable Rust logging output
+ * 
+ * Controls whether Rust logging functions output messages.
+ * Useful for preventing log interference during animations.
+ * 
+ * @param[in] enabled true to enable logging, false to disable
+ */
+void rs_set_logging_enabled(bool enabled);
+
+/**
  * @brief Log informational message (rslog variant)
  * 
  * Alternative informational logging function using Rust infrastructure.
@@ -1857,6 +1895,44 @@ int list_gguf_models(void);
  * @note This is primarily a development and testing function
  */
 int gguf_initialization(void);
+
+
+/**
+ * @brief Validate model configuration file
+ * 
+ * Validates the models.json configuration file for correctness and completeness.
+ * Checks for valid JSON structure, required fields, and consistency.
+ * 
+ * @param[in] config_path Path to the models.json configuration file
+ * @return 0 if valid, negative value on error
+ * @note This function helps ensure reliable model configuration management
+ */
+int rust_validate_model_config(const char *config_path);
+
+/**
+ * @brief Generate and validate model configuration
+ * 
+ * Combines generation and validation of the models.json configuration file.
+ * First generates the configuration, then validates it for correctness.
+ * 
+ * @return 0 on success, negative value on error
+ * @note This function streamlines the configuration management process
+ */
+int rust_generate_and_validate_config(void);
+
+/**
+ * @brief Run the LLM engine with the specified configuration
+ * 
+ * Starts the actual LLM engine for inference and interaction.
+ * This function loads the model, initializes the context, and
+ * provides an interactive inference loop.
+ * 
+ * @param[in] config_path Path to the models.json configuration file (NULL for default)
+ * @return 0 on success, negative value on error
+ * @note This function provides the main LLM inference functionality
+ */
+int rust_run_llm_engine(const char *config_path);
+
 
 #ifdef __cplusplus
 }  // extern "C"

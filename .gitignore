@@ -27,5 +27,14 @@ cpp-app/build/
 *.jar
 *.a
 
+# Ignore IDE and editor specific files
+.idea/
+*.iml
+*.swp
+*.swo
+*.code-workspace
+output/
+
+
 # gguf model files
 /models/*.gguf

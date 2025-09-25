@@ -9,19 +9,19 @@ pub extern "C" fn rust_llm() {
 
     if old == 0 {
         GLOBAL_VAR.store(1, Ordering::SeqCst);
-        println!("GLOBAL_VAR set to 1");
-        println!("Hello from Rust LLM!");
+        eprintln!("[INFO] GLOBAL_VAR set to 1");
+        eprintln!("[INFO] Hello from Rust LLM!");
     } else {
         GLOBAL_VAR.store(0, Ordering::SeqCst);
-        println!("GLOBAL_VAR is already set to 1, resetting to 0");
+        eprintln!("[INFO] GLOBAL_VAR is already set to 1, resetting to 0");
     }
 
-    println!("GLOBAL_VAR current value: {}", GLOBAL_VAR.load(Ordering::SeqCst));
+    eprintln!("[INFO] GLOBAL_VAR current value: {}", GLOBAL_VAR.load(Ordering::SeqCst));
 }
 
 #[no_mangle]
 pub extern "C" fn rust_func() {
-    println!("Hello from Rust!");
+    eprintln!("[INFO] Hello from Rust!");
 }
 
 #[inline] pub fn checked_add_i64(a: i64, b: i64) -> Option<i64> { a.checked_add(b) }
@@ -39,7 +39,6 @@ pub struct CpuInfo {
     pub brand: [u8; 128],
 }
 
-// macOS용 구현
 #[cfg(target_os = "macos")]
 pub fn cpu_info_platform() -> CpuInfo {
     let logical = std::thread::available_parallelism().map(|n| n.get() as u32).unwrap_or(0);
@@ -57,7 +56,6 @@ pub fn cpu_info_platform() -> CpuInfo {
     info
 }
 
-// 다른 플랫폼용 구현 (fallback)
 #[cfg(not(target_os = "macos"))]
 pub fn cpu_info_platform() -> CpuInfo {
     let logical = std::thread::available_parallelism().map(|n| n.get() as u32).unwrap_or(0);
@@ -91,7 +89,7 @@ pub extern "C" fn rust_get_cpu_info(out: *mut CpuInfo) -> bool {
 
     let _ = checked_add_i64(info.cores as i64, info.logical as i64)
         .map(|sum| { let _ = sum; })
-        .or_else(|| { eprintln!("[rust_get_cpu_info] overflow in cores+logical"); None });
+        .or_else(|| { eprintln!("[ERROR] [rust_get_cpu_info] overflow in cores+logical"); None });
 
     unsafe {
         std::ptr::write(out, info);

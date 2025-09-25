@@ -383,7 +383,7 @@ pub extern "C" fn ggml_threadpool_params_init(
 pub extern "C" fn common_model_params_to_llama(params: *const common_params) -> llama_model_params {
     rs_log_info(cstr("Mock: Converting common params to llama model params").as_ptr());
     
-    let mut mparams = llama_model_default_params();
+    let mparams = llama_model_default_params();
     
     if !params.is_null() {
         // Mock parameter conversion
@@ -435,12 +435,22 @@ pub extern "C" fn common_init_from_params_enhanced(params: *const common_params)
     // Convert parameters
     let mparams = common_model_params_to_llama(params);
     
-    // Mock model path (in real implementation, would come from params)
-    let model_path = cstr("mock_model.gguf");
-    rs_log_info(cstr(&format!("Loading model from: {}", "mock_model.gguf")).as_ptr());
+    // Use actual model path selection
+    let selected_model = select_best_model();
+    let (model_path_cstr, model_path_display) = match selected_model {
+        Some(path) => {
+            let path_str = path.to_str().unwrap_or("unknown_model.gguf");
+            (cstr(path_str), path_str.to_string())
+        }
+        None => {
+            rs_log_warn(cstr("No model found, using fallback").as_ptr());
+            (cstr("models/default.gguf"), "models/default.gguf".to_string())
+        }
+    };
+    rs_log_info(cstr(&format!("Loading model from: {}", model_path_display)).as_ptr());
     
     // Load model
-    let model = llama_model_load_from_file(model_path.as_ptr(), mparams);
+    let model = llama_model_load_from_file(model_path_cstr.as_ptr(), mparams);
     if model.is_null() {
         rs_log_error(cstr("Failed to load model").as_ptr());
         return result;
@@ -652,7 +662,7 @@ pub fn load_model_config() -> ModelConfig {
             Ok(content) => {
                 match serde_json::from_str::<ModelConfig>(&content) {
                     Ok(config) => {
-                        rs_log_info(cstr("✅ Loaded model configuration from models.json").as_ptr());
+                        rs_log_info(cstr("Loaded model configuration from models.json").as_ptr());
                         return config;
                     }
                     Err(e) => {
@@ -778,6 +788,8 @@ pub struct GgufInfo {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModelConfig {
+    pub engine_port : i16,
+    pub model_path: String,
     pub default_model: String,
     pub model_directory: String,
     pub fallback_models: Vec<String>,
@@ -824,8 +836,20 @@ impl Default for ModelConfig {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(100);
-        
+
+        // Get model path from environment or discover the best model
+        let model_path = env::var("MODEL_PATH").unwrap_or_else(|_| {
+            // Try to discover a model automatically
+            if let Some(best_model) = discover_available_models(&models_dir).first() {
+                format!("{}/{}", models_dir, best_model)
+            } else {
+                String::new()
+            }
+        });
+
         ModelConfig {
+            engine_port: 5000, // Default port, only use JSON config value
+            model_path,
             default_model,
             model_directory: models_dir,
             fallback_models,
@@ -1175,7 +1199,7 @@ pub extern "C" fn generate_model_config() -> c_int {
         Ok(json_str) => {
             match fs::write("models.json", json_str) {
                 Ok(_) => {
-                    rs_log_info(cstr("✅ Generated models.json with discovered models").as_ptr());
+                    rs_log_info(cstr("Generated models.json with discovered models").as_ptr());
                     rs_log_info(cstr(&format!("Found {} fallback models", config.fallback_models.len())).as_ptr());
                     for (i, model) in config.fallback_models.iter().enumerate() {
                         rs_log_info(cstr(&format!("  {}. {}", i + 1, model)).as_ptr());
@@ -1292,26 +1316,26 @@ pub extern "C" fn list_gguf_models() -> c_int {
 /// Test function to demonstrate GGUF model initialization
 #[no_mangle]
 pub extern "C" fn gguf_initialization() -> c_int {
-    rs_log_info(cstr("🚀 Testing GGUF Model Initialization").as_ptr());
+    rs_log_info(cstr("Testing GGUF Model Initialization").as_ptr());
     
     // List available models
     let model_count = list_gguf_models();
     
     if model_count <= 0 {
-        rs_log_error(cstr("❌ No GGUF models available for testing").as_ptr());
+        rs_log_error(cstr("No GGUF models available for testing").as_ptr());
         return -1;
     }
     
     // Initialize model automatically
-    rs_log_info(cstr("🔧 Initializing model automatically...").as_ptr());
+    rs_log_info(cstr("Initializing model automatically...").as_ptr());
     let result = init_gguf_model_auto();
     
     if result.model._impl.is_null() || result.context._impl.is_null() {
-        rs_log_error(cstr("❌ Failed to initialize GGUF model").as_ptr());
+        rs_log_error(cstr("Failed to initialize GGUF model").as_ptr());
         return -1;
     }
     
-    rs_log_info(cstr("✅ GGUF model initialized successfully!").as_ptr());
+    rs_log_info(cstr("GGUF model initialized successfully!").as_ptr());
     rs_log_info(cstr(&format!("   Model pointer: {:p}", result.model._impl)).as_ptr());
     rs_log_info(cstr(&format!("   Context pointer: {:p}", result.context._impl)).as_ptr());
     
@@ -1320,7 +1344,7 @@ pub extern "C" fn gguf_initialization() -> c_int {
     llama_model_free(result.model._impl);
     
     rs_log_info(cstr("🧹 Model resources cleaned up").as_ptr());
-    rs_log_info(cstr("🎉 GGUF initialization test completed successfully!").as_ptr());
+    rs_log_info(cstr("GGUF initialization test completed successfully!").as_ptr());
     
     0 // Success
 }

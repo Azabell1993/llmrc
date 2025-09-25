@@ -15,6 +15,12 @@
 // For error output in parse_args
 #include <iostream>
 
+/**
+ * @brief Command-line argument structure
+ * Holds parsed command-line arguments for application configuration.
+ * Includes flags for run mode, help display, LLM mode, GGUF listing, and benchmark mode.
+ * This structure is used to manage and validate command-line inputs.
+ */
 typedef struct log_node {
     char* message;
     struct log_node* next;
@@ -81,8 +87,8 @@ static void* log_thread_func(void* arg) {
             log_head = node->next;
             if (!log_head) log_tail = NULL;
             pthread_mutex_unlock(&log_mutex);
-
-            // 파일 이름 결정
+            
+            // Extract log level from message
             const char* level_start = strchr(node->message, '[') + 1;
             const char* level_end = strchr(level_start, ']');
             char level[16] = {0};

@@ -1,4 +1,6 @@
 {
+  "engine_port": 18080,
+  "model_path": "models/deepseek-coder-v2-lite-instruct-q4_k_m.gguf",
   "default_model": "",
   "model_directory": "models",
   "fallback_models": [

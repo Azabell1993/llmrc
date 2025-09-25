@@ -6,6 +6,11 @@ mod llmrust;
 #[path = "../common/mod.rs"]
 mod common;
 
+#[path = "../engine/mod.rs"]
+mod engine;
+
+
+
 pub use rust_llm::rust_llm;
 pub use rust_llm::rust_func;
 pub use rust_llm::CpuInfo;
@@ -20,6 +25,7 @@ pub use rust_llm::cpu_info_platform;
 pub use llmrust::llmrust_hello;
 
 pub use common::log::*;
+pub use common::utils::*;
 pub use common::model::{
     llama_model_load_from_file, llama_init_from_model, llama_model_free, llama_free,
     llama_model_default_params, llama_context_default_params, common_init_from_params_enhanced,
@@ -29,3 +35,5 @@ pub use common::model::{
     init_gguf_model_auto, init_gguf_model_c, list_gguf_models, scan_models_directory,
     get_gguf_info, GgufInfo, llama_token, gguf_initialization
 };
+
+pub use engine::*;

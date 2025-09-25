@@ -17,11 +17,23 @@ extern void rs_log_debug(const char*);
 extern void rs_log_error(const char*);
 extern int rust_entry(int argc, char* argv[]);
 
+/**
+ * @brief Call Rust println function
+ * * This function initializes the Rust environment and calls the main Rust entry point.
+ * * It also performs argument validation and logging.
+ * @param[in] argc Argument count
+ * @param[in] argv Argument vector
+ * @return Exit code from Rust function or 0 on success
+ *  @retval 0 Success
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 inline int call_rsprintln(int argc, char* argv[]) {
+
+    // Log function entry
+    rs_log_info("Entering call_rsprintln()");
     std::string log_msg = std::string(__func__) + ": ** Engine init **";
     rs_log_info(log_msg.c_str());
 
@@ -37,18 +49,21 @@ inline int call_rsprintln(int argc, char* argv[]) {
         std::string log_msg2 = std::string(__func__) + ": Starting full LLM system";
         rs_log_info(log_msg2.c_str());
 
-        rs_log_info("📋 Listing GGUF Models");
+        rs_log_info("   ** Listing GGUF Models");
         int model_count = list_gguf_models();
         rs_log_info(("Found " + std::to_string(model_count) + " GGUF models").c_str());
         
         int result = rust_entry(argc, argv);
-        rs_log_info("LLM system execution completed");
+        rs_log_info("   ** LLM system execution completed");
         return result;
 
-    } else if (argc > 1 && std::string(argv[1]) == "llmrust") {
+    } else if (argc > 1 && std::string(argv[1]) == "llmrust") { // Basic test command
+        rs_log_info(" [*] Running basic llmrust test command");
         llmrust_hello();
-    } else {
-        rs_log_info("Running in basic mode - no LLM system execution");
+    } else { // No LLM system, basic mode
+        //< -- Basic mode without LLM system
+        rs_log_info(" [*] No LLM system command detected");
+        rs_log_info(" [!!] Running in basic mode - no LLM system execution");
     }
 
     rs_log_debug("Fetching CPU info from Rust...");

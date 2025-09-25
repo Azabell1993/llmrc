@@ -201,14 +201,28 @@ final_guide() {
   echo
   echo "${BOLD}Next steps ${RST}"
   cat <<EOF
+${GRN}Build Commands:${RST}
 ✔ To rebuild:   $0 build ${arch_flag}
 ✔ To debug:     $0 debug ${arch_flag}
-✔ To run:       $0 run ${arch_flag}
 ✔ To clean:     $0 clean ${arch_flag}
 ✔ To reconfig:  $0 reconfig ${arch_flag}
 ✔ To reset:     $0 fresh ${arch_flag}
 
-Tip: Always clean before build if you switch architectures or update Rust code.
+${CYA}LLM System Commands:${RST}
+✔ Run LLM:      $0 run ${arch_flag} llm
+✔ Start Server  $0 run ${arch_flag} llm run
+✔ List models:  $0 run ${arch_flag} llm list
+✔ Gen config:   $0 run ${arch_flag} llm config_gen
+✔ Validate:     $0 run ${arch_flag} llm config_validate
+✔ Show config:  $0 run ${arch_flag} llm config_show
+✔ Config help:  $0 run ${arch_flag} llm config_help
+✔ LLM help:     $0 run ${arch_flag} llm --help
+
+${YLW}Development Tips:${RST}
+• Always clean before build if you switch architectures or update Rust code
+• Use debug build for development: $0 debug ${arch_flag}
+• Check model directory: ls -la models/
+• View validation results: cat models/*.validation
 EOF
 }
 
@@ -218,10 +232,10 @@ print_banner
 # -------- Commands --------
 case "${cmd}" in
   build)
-    echo "${YLW}⚠ It is recommended to run '$0 clean ${arch_flag}' before build to avoid stale objects.${RST}"
+    echo "${YLW}WARNING: It is recommended to run '$0 clean ${arch_flag}' before build to avoid stale objects.${RST}"
     ensure_config
     echo "${BOLD}==> Building project [${ARCH}]...${RST}"
-    # ⚠️ Rust 빌드는 CMakeLists.txt의 add_custom_command/target에서 cargo로 수행됨
+    # Note: Rust build is performed by cargo in CMakeLists.txt's add_custom_command/target
     cmake --build "${BUILD_DIR}" -j
     ;;
 
