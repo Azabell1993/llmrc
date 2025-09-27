@@ -132,8 +132,8 @@ For questions, issues, or contributions, please open an issue or pull request on
    
    **macOS:**
    ```bash
-   ./build.sh build --arm64    # For Apple Silicon
-   ./build.sh build --x86_64   # For Intel Macs
+   ./build_mac.sh build --arm64    # For Apple Silicon
+   ./build_mac.sh build --x86_64   # For Intel Macs
    ```
    
    **Ubuntu/Debian:**
@@ -146,7 +146,7 @@ For questions, issues, or contributions, please open an issue or pull request on
    
    **macOS:**
    ```bash
-   ./build.sh run --arm64 gguf_list
+   ./build_mac.sh run --arm64 gguf_list
    ```
    
    **Ubuntu/Debian:**
@@ -161,20 +161,20 @@ For questions, issues, or contributions, please open an issue or pull request on
 **macOS:**
 ```bash
 # Basic Operations
-./build.sh build --arm64                    # Build for Apple Silicon  
-./build.sh debug --arm64                    # Debug build with logging
-./build.sh clean --arm64                    # Clean all build artifacts
-./build.sh fresh --arm64                    # Complete rebuild from scratch
+./build_mac.sh build --arm64                    # Build for Apple Silicon  
+./build_mac.sh debug --arm64                    # Debug build with logging
+./build_mac.sh clean --arm64                    # Clean all build artifacts
+./build_mac.sh fresh --arm64                    # Complete rebuild from scratch
 
 # Model Management
-./build.sh run --arm64 gguf_list            # List available models
-./build.sh run --arm64 config_gen           # Generate dynamic config
-./build.sh run --arm64 config_show          # Show current config
-./build.sh run --arm64 config_help          # Environment variable help
+./build_mac.sh run --arm64 gguf_list            # List available models
+./build_mac.sh run --arm64 config_gen           # Generate dynamic config
+./build_mac.sh run --arm64 config_show          # Show current config
+./build_mac.sh run --arm64 config_help          # Environment variable help
 
 # HTTP API Server Operations  
-./build.sh run --arm64 llm run              # Start HTTP API server with Engine integration
-./build.sh --help                           # Show comprehensive help
+./build_mac.sh run --arm64 llm run              # Start HTTP API server with Engine integration
+./build_mac.sh --help                           # Show comprehensive help
 ```
 
 **Ubuntu/Debian:**
@@ -203,10 +203,10 @@ The system automatically discovers and validates GGUF models in the `models/` di
 
 ```bash
 # Generate dynamic configuration based on available models
-./build.sh run --arm64 config_gen
+./build_mac.sh run --arm64 config_gen
 
 # View discovered models and their metadata
-./build.sh run --arm64 gguf_list
+./build_mac.sh run --arm64 gguf_list
 ```
 
 **Example Output:**
@@ -224,7 +224,7 @@ Start the comprehensive HTTP API server with Engine integration and real-time lo
 
 **macOS:**
 ```bash
-./build.sh run --arm64 llm run
+./build_mac.sh run --arm64 llm run
 ```
 
 **Ubuntu/Debian:**
@@ -249,7 +249,7 @@ Start the comprehensive HTTP API server with Engine integration and real-time lo
 **Example Usage:**
 ```bash
 # Start the server (choose your platform)
-./build.sh run --arm64 llm run              # macOS
+./build_mac.sh run --arm64 llm run              # macOS
 ./build_ubuntu.sh run --x86_64 llm run      # Ubuntu
 
 # Health check
@@ -287,7 +287,7 @@ The system supports comprehensive environment variable configuration:
 ```bash
 # Use specific model (macOS)
 export MODEL_PATH="/path/to/my-model.gguf"
-./build.sh run --arm64 config_show
+./build_mac.sh run --arm64 config_show
 
 # Use specific model (Ubuntu)
 export MODEL_PATH="/path/to/my-model.gguf"
@@ -295,7 +295,7 @@ export MODEL_PATH="/path/to/my-model.gguf"
 
 # Set default model in models directory (macOS)
 export DEFAULT_MODEL="deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
-./build.sh run --arm64 gguf_list
+./build_mac.sh run --arm64 gguf_list
 
 # Set default model in models directory (Ubuntu)
 export DEFAULT_MODEL="deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
@@ -303,7 +303,7 @@ export DEFAULT_MODEL="deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
 
 # Custom models directory (macOS)
 export MODELS_DIR="/custom/path/to/models"
-./build.sh run --arm64 config_gen
+./build_mac.sh run --arm64 config_gen
 
 # Custom models directory (Ubuntu)
 export MODELS_DIR="/custom/path/to/models"
@@ -311,7 +311,7 @@ export MODELS_DIR="/custom/path/to/models"
 
 # Customize preferences (works on both platforms)
 export PREFER_QUANTIZED=false MAX_FILE_SIZE_GB=50
-./build.sh run --arm64 config_show              # macOS
+./build_mac.sh run --arm64 config_show              # macOS
 ./build_ubuntu.sh run --x86_64 config_show      # Ubuntu
 ```
 
@@ -347,7 +347,7 @@ The system generates `models.json` automatically:
 
 **macOS:**
 ```bash
-./build.sh debug --arm64
+./build_mac.sh debug --arm64
 # Enables:
 # - Verbose compilation output
 # - Runtime debug logging  
@@ -370,11 +370,11 @@ The system generates `models.json` automatically:
 **macOS:**
 ```bash
 # Apple Silicon (M1/M2/M3)
-./build.sh build --arm64
+./build_mac.sh build --arm64
 export CARGO_BUILD_TARGET=aarch64-apple-darwin
 
 # Intel Macs
-./build.sh build --x86_64  
+./build_mac.sh build --x86_64  
 export CARGO_BUILD_TARGET=x86_64-apple-darwin
 ```
 
@@ -395,7 +395,7 @@ export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
 export MAX_FILE_SIZE_GB=10 MIN_FILE_SIZE_MB=500
 
 # macOS
-./build.sh run --arm64 config_gen
+./build_mac.sh run --arm64 config_gen
 
 # Ubuntu
 ./build_ubuntu.sh run --x86_64 config_gen
@@ -404,7 +404,7 @@ export MAX_FILE_SIZE_GB=10 MIN_FILE_SIZE_MB=500
 export PREFER_QUANTIZED=false
 
 # macOS
-./build.sh run --arm64 gguf_list
+./build_mac.sh run --arm64 gguf_list
 
 # Ubuntu
 ./build_ubuntu.sh run --x86_64 gguf_list
@@ -414,7 +414,7 @@ export PREFER_QUANTIZED=false
 ```bash
 # Start server with custom port (default: 8080)
 # macOS
-./build.sh run --arm64 llm run
+./build_mac.sh run --arm64 llm run
 
 # Ubuntu
 ./build_ubuntu.sh run --x86_64 llm run
