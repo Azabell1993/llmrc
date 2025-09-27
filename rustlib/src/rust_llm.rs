@@ -42,8 +42,8 @@ pub struct CpuInfo {
 #[cfg(target_os = "macos")]
 pub fn cpu_info_platform() -> CpuInfo {
     let logical = std::thread::available_parallelism().map(|n| n.get() as u32).unwrap_or(0);
-    let cores = logical;    // macOS에서는 논리 코어와 물리 코어를 같다고 가정
-    let freq_mhz = 0;       // [TO-DO] 주파수는 나중에 sysctl로 구현
+    let cores = logical;    // On macOS, assume logical cores equal physical cores
+    let freq_mhz = 0;       // [TO-DO] Frequency will be implemented later using sysctl
     let brand_str = "macOS CPU";
 
     let mut info = CpuInfo {
@@ -62,11 +62,11 @@ pub fn cpu_info_platform() -> CpuInfo {
     
     let logical = std::thread::available_parallelism().map(|n| n.get() as u32).unwrap_or(0);
     
-    // Linux에서 /proc/cpuinfo를 읽어서 실제 CPU 정보 가져오기
+    // Read /proc/cpuinfo on Linux to get actual CPU information
     let (cores, brand_str, freq_mhz) = read_linux_cpu_info();
     
     let mut info = CpuInfo {
-        cores: cores.unwrap_or(logical), // 물리 코어 수, 실패시 논리 코어 수 사용
+        cores: cores.unwrap_or(logical), // Physical core count, fallback to logical core count on failure
         logical,
         freq_mhz: freq_mhz.unwrap_or(0),
         brand: [0; 128],
@@ -102,7 +102,7 @@ fn read_linux_cpu_info() -> (Option<u32>, String, Option<u64>) {
     let mut brand_name = "Linux CPU".to_string();
     let mut max_freq_mhz = None;
     
-    // /proc/cpuinfo 읽기
+    // Read /proc/cpuinfo
     if let Ok(content) = fs::read_to_string("/proc/cpuinfo") {
         let mut core_ids = HashSet::new();
         let mut current_physical_id = None;
@@ -111,13 +111,13 @@ fn read_linux_cpu_info() -> (Option<u32>, String, Option<u64>) {
         for line in content.lines() {
             let line = line.trim();
             
-            // CPU 모델명 추출
+            // Extract CPU model name
             if line.starts_with("model name") {
                 if let Some(colon_pos) = line.find(':') {
                     brand_name = line[colon_pos + 1..].trim().to_string();
                 }
             }
-            // 물리적 프로세서 ID
+            // Physical processor ID
             else if line.starts_with("physical id") {
                 if let Some(colon_pos) = line.find(':') {
                     if let Ok(id) = line[colon_pos + 1..].trim().parse::<u32>() {
@@ -125,7 +125,7 @@ fn read_linux_cpu_info() -> (Option<u32>, String, Option<u64>) {
                     }
                 }
             }
-            // 코어 ID
+            // Core ID
             else if line.starts_with("core id") {
                 if let Some(colon_pos) = line.find(':') {
                     if let Ok(id) = line[colon_pos + 1..].trim().parse::<u32>() {
@@ -133,7 +133,7 @@ fn read_linux_cpu_info() -> (Option<u32>, String, Option<u64>) {
                     }
                 }
             }
-            // CPU 주파수 (MHz)
+            // CPU frequency (MHz)
             else if line.starts_with("cpu MHz") {
                 if let Some(colon_pos) = line.find(':') {
                     if let Ok(freq) = line[colon_pos + 1..].trim().parse::<f64>() {
@@ -143,7 +143,7 @@ fn read_linux_cpu_info() -> (Option<u32>, String, Option<u64>) {
                 }
             }
             
-            // 빈 줄이면 현재 프로세서 정보 처리
+            // If empty line, process current processor info
             if line.is_empty() {
                 if let (Some(phy_id), Some(core_id)) = (current_physical_id, current_core_id) {
                     core_ids.insert((phy_id, core_id));
@@ -153,7 +153,7 @@ fn read_linux_cpu_info() -> (Option<u32>, String, Option<u64>) {
             }
         }
         
-        // 마지막 프로세서 정보 처리
+        // Process last processor info
         if let (Some(phy_id), Some(core_id)) = (current_physical_id, current_core_id) {
             core_ids.insert((phy_id, core_id));
         }
@@ -163,11 +163,11 @@ fn read_linux_cpu_info() -> (Option<u32>, String, Option<u64>) {
         }
     }
     
-    // /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq에서 최대 주파수 확인
+    // Check max frequency from /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
     if max_freq_mhz.is_none() {
         if let Ok(freq_str) = fs::read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq") {
             if let Ok(freq_khz) = freq_str.trim().parse::<u64>() {
-                max_freq_mhz = Some(freq_khz / 1000); // kHz를 MHz로 변환
+                max_freq_mhz = Some(freq_khz / 1000); // Convert kHz to MHz
             }
         }
     }

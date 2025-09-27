@@ -4,6 +4,7 @@
 ![LlamaRS Architecture](llmrust.png)
 
 [![macOS](https://img.shields.io/badge/macOS-ARM64%20%7C%20x86__64-success.svg?logo=apple)](https://www.apple.com/macos/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-x86__64%20%7C%20ARM64-orange.svg?logo=ubuntu)](https://ubuntu.com/)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg?logo=rust)](https://www.rust-lang.org/)
 [![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg?logo=cplusplus)](https://isocpp.org/)
 [![GGUF](https://img.shields.io/badge/GGUF-Model%20Support-green.svg)](https://github.com/ggerganov/ggml)
@@ -19,15 +20,16 @@ For questions, issues, or contributions, please open an issue or pull request on
 
 ## Project Overview
 
-**LLM Rust** is a comprehensive Large Language Model management system designed for macOS, featuring dynamic GGUF model discovery, configuration management, and a powerful build system. This project provides a complete replacement for traditional llama.cpp dependencies while offering superior performance and reliability.
+**LLM Rust** is a comprehensive Large Language Model management system designed for **macOS and Ubuntu**, featuring dynamic GGUF model discovery, configuration management, and a powerful cross-platform build system. This project provides a complete replacement for traditional llama.cpp dependencies while offering superior performance and reliability across different operating systems.
 
 ### Why Choose LLM Rust?
 
+- **Cross-Platform Support**: Native builds for macOS (ARM64/x86_64) and Ubuntu (x86_64/ARM64)
 - **Zero Configuration Hassles**: Automatic model discovery and configuration
 - **Self-Contained System**: No external llama.cpp dependencies required
 - **Lightning Fast Builds**: Optimized Rust compilation with minimal overhead
 - **Dynamic Configuration**: Runtime environment variable support
-- **Professional Build System**: Comprehensive CMake + Cargo integration
+- **Professional Build System**: Comprehensive CMake + Cargo integration with platform detection
 - **Smart Model Management**: Automatic GGUF validation and metadata extraction
 
 ## Key Features
@@ -65,7 +67,7 @@ For questions, issues, or contributions, please open an issue or pull request on
 }
 ```
 
-### 🎮 **Command Interface**
+### **Command Interface**
 - **Model Listing**: `gguf_list` - Display all available models with metadata
 - **Config Generation**: `config_gen` - Create dynamic configuration files
 - **Config Display**: `config_show` - View current configuration as JSON
@@ -82,8 +84,8 @@ For questions, issues, or contributions, please open an issue or pull request on
 │  ┌───────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
 │  │   Build System    │◄─►│   Rust LLM Core     │◄─►│     Model Management       │ │
 │  │   • CMake + Cargo │   │   • GGUF Support    │   │   • Auto-Discovery         │ │
-│  │   • Cross-Arch    │   │   • 150+ Functions  │   │   • Dynamic Config         │ │
-│  │   • Debug Mode    │   │   • Mock Backend    │   │   • Environment Variables  │ │
+│  │   • Cross-Platform│   │   • 150+ Functions  │   │   • Dynamic Config         │ │
+│  │   • macOS + Ubuntu│   │   • Mock Backend    │   │   • Environment Variables  │ │
 │  └───────────────────┘   └─────────────────────┘   └────────────────────────────┘ │
 │                                                                                   │
 │  ┌───────────────────┐   ┌─────────────────────┐   ┌────────────────────────────┐ │
@@ -105,10 +107,10 @@ For questions, issues, or contributions, please open an issue or pull request on
 ## Quick Start
 
 ### Prerequisites
-- **macOS** (ARM64 or x86_64)
+- **macOS** (ARM64 or x86_64) or **Ubuntu/Debian** (x86_64 or ARM64)
 - **Rust** 1.70+ (stable)
 - **CMake** 3.15+
-- **Clang/C++** 17+
+- **C++ Compiler**: Clang/C++ 17+ (macOS) or GCC 11+ (Ubuntu)
 
 ### Installation & Setup
 
@@ -116,7 +118,7 @@ For questions, issues, or contributions, please open an issue or pull request on
    ```bash
    git clone https://github.com/Azabell1993/llmrc.git
    cd llmrc
-   git checkout llama-rs
+   git checkout ubuntu_poc  # Latest cross-platform branch
    ```
 
 2. **Place GGUF models:**
@@ -127,20 +129,36 @@ For questions, issues, or contributions, please open an issue or pull request on
    ```
 
 3. **Build the system:**
+   
+   **macOS:**
    ```bash
    ./build.sh build --arm64    # For Apple Silicon
    ./build.sh build --x86_64   # For Intel Macs
    ```
+   
+   **Ubuntu/Debian:**
+   ```bash
+   ./build_ubuntu.sh build --x86_64    # For x86_64 systems
+   ./build_ubuntu.sh build --arm64     # For ARM64 systems
+   ```
 
 4. **List available models:**
+   
+   **macOS:**
    ```bash
    ./build.sh run --arm64 gguf_list
+   ```
+   
+   **Ubuntu/Debian:**
+   ```bash
+   ./build_ubuntu.sh run --x86_64 gguf_list
    ```
 
 ## Usage Guide
 
 ### Build System Commands
 
+**macOS:**
 ```bash
 # Basic Operations
 ./build.sh build --arm64                    # Build for Apple Silicon  
@@ -157,6 +175,25 @@ For questions, issues, or contributions, please open an issue or pull request on
 # HTTP API Server Operations  
 ./build.sh run --arm64 llm run              # Start HTTP API server with Engine integration
 ./build.sh --help                           # Show comprehensive help
+```
+
+**Ubuntu/Debian:**
+```bash
+# Basic Operations
+./build_ubuntu.sh build --x86_64            # Build for x86_64 systems
+./build_ubuntu.sh debug --x86_64            # Debug build with logging
+./build_ubuntu.sh clean --x86_64            # Clean all build artifacts
+./build_ubuntu.sh fresh --x86_64            # Complete rebuild from scratch
+
+# Model Management
+./build_ubuntu.sh run --x86_64 gguf_list    # List available models
+./build_ubuntu.sh run --x86_64 config_gen   # Generate dynamic config
+./build_ubuntu.sh run --x86_64 config_show  # Show current config
+./build_ubuntu.sh run --x86_64 config_help  # Environment variable help
+
+# HTTP API Server Operations  
+./build_ubuntu.sh run --x86_64 llm run      # Start HTTP API server with Engine integration
+./build_ubuntu.sh --help                    # Show comprehensive help
 ```
 
 ### Model Management
@@ -185,8 +222,14 @@ The system automatically discovers and validates GGUF models in the `models/` di
 
 Start the comprehensive HTTP API server with Engine integration and real-time logging:
 
+**macOS:**
 ```bash
 ./build.sh run --arm64 llm run
+```
+
+**Ubuntu/Debian:**
+```bash
+./build_ubuntu.sh run --x86_64 llm run
 ```
 
 **Available Endpoints:**
@@ -201,11 +244,13 @@ Start the comprehensive HTTP API server with Engine integration and real-time lo
 - **Graceful Shutdown**: Immediate termination via `/stop` endpoint
 - **Multi-threaded**: Concurrent request handling
 - **OpenAI Compatible**: Standard API format support
+- **Cross-Platform**: Works identically on macOS and Ubuntu
 
 **Example Usage:**
 ```bash
-# Start the server
-./build.sh run --arm64 llm run
+# Start the server (choose your platform)
+./build.sh run --arm64 llm run              # macOS
+./build_ubuntu.sh run --x86_64 llm run      # Ubuntu
 
 # Health check
 curl http://localhost:8080/health
@@ -240,21 +285,34 @@ The system supports comprehensive environment variable configuration:
 ### Configuration Examples
 
 ```bash
-# Use specific model
+# Use specific model (macOS)
 export MODEL_PATH="/path/to/my-model.gguf"
 ./build.sh run --arm64 config_show
 
-# Set default model in models directory
+# Use specific model (Ubuntu)
+export MODEL_PATH="/path/to/my-model.gguf"
+./build_ubuntu.sh run --x86_64 config_show
+
+# Set default model in models directory (macOS)
 export DEFAULT_MODEL="deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
 ./build.sh run --arm64 gguf_list
 
-# Custom models directory
+# Set default model in models directory (Ubuntu)
+export DEFAULT_MODEL="deepseek-coder-v2-lite-instruct-q4_k_m.gguf"
+./build_ubuntu.sh run --x86_64 gguf_list
+
+# Custom models directory (macOS)
 export MODELS_DIR="/custom/path/to/models"
 ./build.sh run --arm64 config_gen
 
-# Customize preferences
+# Custom models directory (Ubuntu)
+export MODELS_DIR="/custom/path/to/models"
+./build_ubuntu.sh run --x86_64 config_gen
+
+# Customize preferences (works on both platforms)
 export PREFER_QUANTIZED=false MAX_FILE_SIZE_GB=50
-./build.sh run --arm64 config_show
+./build.sh run --arm64 config_show              # macOS
+./build_ubuntu.sh run --x86_64 config_show      # Ubuntu
 ```
 
 ### Dynamic Configuration File
@@ -286,6 +344,8 @@ The system generates `models.json` automatically:
 ## Advanced Features
 
 ### Debug Mode with Comprehensive Logging
+
+**macOS:**
 ```bash
 ./build.sh debug --arm64
 # Enables:
@@ -295,7 +355,19 @@ The system generates `models.json` automatically:
 # - Memory safety checks
 ```
 
-### Cross-Architecture Building
+**Ubuntu/Debian:**
+```bash
+./build_ubuntu.sh debug --x86_64
+# Enables:
+# - Verbose compilation output
+# - Runtime debug logging  
+# - Debug symbols for debugging
+# - Memory safety checks
+```
+
+### Cross-Platform and Cross-Architecture Building
+
+**macOS:**
 ```bash
 # Apple Silicon (M1/M2/M3)
 ./build.sh build --arm64
@@ -306,21 +378,46 @@ export CARGO_BUILD_TARGET=aarch64-apple-darwin
 export CARGO_BUILD_TARGET=x86_64-apple-darwin
 ```
 
+**Ubuntu/Debian:**
+```bash
+# x86_64 Systems (Intel/AMD)
+./build_ubuntu.sh build --x86_64
+export CARGO_BUILD_TARGET=x86_64-unknown-linux-gnu
+
+# ARM64 Systems (Raspberry Pi, ARM servers)
+./build_ubuntu.sh build --arm64
+export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
+```
+
 ### Model Filtering and Preferences
 ```bash
-# Filter models by size
+# Filter models by size (works on both platforms)
 export MAX_FILE_SIZE_GB=10 MIN_FILE_SIZE_MB=500
+
+# macOS
 ./build.sh run --arm64 config_gen
+
+# Ubuntu
+./build_ubuntu.sh run --x86_64 config_gen
 
 # Prefer non-quantized models
 export PREFER_QUANTIZED=false
+
+# macOS
 ./build.sh run --arm64 gguf_list
+
+# Ubuntu
+./build_ubuntu.sh run --x86_64 gguf_list
 ```
 
 ### HTTP API Server Advanced Features
 ```bash
 # Start server with custom port (default: 8080)
+# macOS
 ./build.sh run --arm64 llm run
+
+# Ubuntu
+./build_ubuntu.sh run --x86_64 llm run
 
 # Server automatically includes:
 # - Engine metadata transmission (every 1 second)
@@ -346,7 +443,8 @@ curl -X POST http://localhost:8080/stop
 - **Incremental Builds**: Only rebuilds changed components
 - **Clean Operations**: `clean`, `reconfig`, `fresh` options
 - **Warning-Free**: Eliminates all compiler warnings
-- **Cross-Platform**: ARM64 and x86_64 support
+- **Cross-Platform**: macOS (ARM64/x86_64) and Ubuntu (x86_64/ARM64) support
+- **Auto-Dependencies**: Automatic installation of cbindgen and other tools
 
 ### Rust Implementation Details
 - **150+ Mock Functions**: Complete LLM API compatibility
@@ -364,23 +462,26 @@ curl -X POST http://localhost:8080/stop
 ### Development Workflow
 1. **Fork the repository** and create a feature branch
 2. **Make changes** following Rust and C++ best practices
-3. **Test thoroughly** on both ARM64 and x86_64
+3. **Test thoroughly** on both macOS (ARM64/x86_64) and Ubuntu (x86_64/ARM64)
 4. **Update documentation** including README.md changes
 5. **Submit pull request** with detailed description
 
 ### Code Standards
 - **Rust**: Follow `rustfmt` and `clippy` recommendations
 - **C++**: Use C++17 standards with RAII principles
+- **Cross-Platform**: Ensure compatibility across macOS and Ubuntu
 - **Documentation**: Maintain comprehensive inline comments
 - **Testing**: Include both unit and integration tests
 
 ## Version Information
 
-- **Current Version**: Development Branch `llama-rs`
+- **Current Version**: Development Branch `ubuntu_poc` (Latest cross-platform)
+- **Stable Branches**: `llama-rs`, `llm_poc`
 - **Rust Edition**: 2021
 - **C++ Standard**: C++17
 - **CMake Requirement**: 3.15+
-- **Target Platforms**: macOS ARM64, macOS x86_64
+- **Supported Platforms**: macOS (ARM64, x86_64), Ubuntu/Debian (x86_64, ARM64)
+- **Target Platforms**: macOS (ARM64, x86_64), Ubuntu/Debian (x86_64, ARM64)
 
 ## Related Projects
 
