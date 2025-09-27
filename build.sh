@@ -128,7 +128,7 @@ fi
 cmd="${1:-}"; arch_flag="${2:-}"
 
 if [[ -z "${cmd}" || -z "${arch_flag}" ]]; then
-  echo "${RED}✘ Missing required arguments.${RST}"; usage; exit 1
+  echo "${RED}Missing required arguments.${RST}"; usage; exit 1
 fi
 
 # Collect additional arguments for run command
@@ -137,7 +137,7 @@ additional_args=("$@")  # Collect remaining arguments
 
 case "${cmd}" in
   build|run|clean|reconfig|fresh|debug) ;; 
-  *) echo "${RED}✘ Invalid command: ${cmd}${RST}"; usage; exit 1;;
+  *) echo "${RED}Invalid command: ${cmd}${RST}"; usage; exit 1;;
 esac
 
 case "${arch_flag}" in
@@ -152,10 +152,25 @@ case "${arch_flag}" in
     CMAKE_OPTS="-DCMAKE_OSX_ARCHITECTURES=x86_64"
     ;;
   *)
-    echo "${RED}✘ Must specify --arm64 or --x86_64${RST}"; usage; exit 1;;
+    echo "${RED}Must specify --arm64 or --x86_64${RST}"; usage; exit 1;;
 esac
 
 # -------- Helpers (define BEFORE use) --------
+ensure_cbindgen() {
+  if ! command -v cbindgen >/dev/null 2>&1; then
+    echo "${YLW}==> cbindgen not found. Installing via cargo...${RST}"
+    if ! command -v cargo >/dev/null 2>&1; then
+      echo "${RED}Rust/Cargo not found. Please install Rust first:${RST}"
+      echo "  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+      exit 1
+    fi
+    cargo install cbindgen
+    echo "${GRN}cbindgen installed successfully${RST}"
+  else
+    echo "${GRN}cbindgen found: $(cbindgen --version)${RST}"
+  fi
+}
+
 ensure_config() {
   mkdir -p "${BUILD_DIR}"
   
@@ -202,21 +217,21 @@ final_guide() {
   echo "${BOLD}Next steps ${RST}"
   cat <<EOF
 ${GRN}Build Commands:${RST}
-✔ To rebuild:   $0 build ${arch_flag}
-✔ To debug:     $0 debug ${arch_flag}
-✔ To clean:     $0 clean ${arch_flag}
-✔ To reconfig:  $0 reconfig ${arch_flag}
-✔ To reset:     $0 fresh ${arch_flag}
+To rebuild:   $0 build ${arch_flag}
+To debug:     $0 debug ${arch_flag}
+To clean:     $0 clean ${arch_flag}
+To reconfig:  $0 reconfig ${arch_flag}
+To reset:     $0 fresh ${arch_flag}
 
 ${CYA}LLM System Commands:${RST}
-✔ Run LLM:      $0 run ${arch_flag} llm
-✔ Start Server  $0 run ${arch_flag} llm run
-✔ List models:  $0 run ${arch_flag} llm list
-✔ Gen config:   $0 run ${arch_flag} llm config_gen
-✔ Validate:     $0 run ${arch_flag} llm config_validate
-✔ Show config:  $0 run ${arch_flag} llm config_show
-✔ Config help:  $0 run ${arch_flag} llm config_help
-✔ LLM help:     $0 run ${arch_flag} llm --help
+Run LLM:      $0 run ${arch_flag} llm
+Start Server  $0 run ${arch_flag} llm run
+List models:  $0 run ${arch_flag} llm list
+Gen config:   $0 run ${arch_flag} llm config_gen
+Validate:     $0 run ${arch_flag} llm config_validate
+Show config:  $0 run ${arch_flag} llm config_show
+Config help:  $0 run ${arch_flag} llm config_help
+LLM help:     $0 run ${arch_flag} llm --help
 
 ${YLW}Development Tips:${RST}
 • Always clean before build if you switch architectures or update Rust code
@@ -233,6 +248,7 @@ print_banner
 case "${cmd}" in
   build)
     echo "${YLW}WARNING: It is recommended to run '$0 clean ${arch_flag}' before build to avoid stale objects.${RST}"
+    ensure_cbindgen
     ensure_config
     echo "${BOLD}==> Building project [${ARCH}]...${RST}"
     # Note: Rust build is performed by cargo in CMakeLists.txt's add_custom_command/target
@@ -241,6 +257,7 @@ case "${cmd}" in
 
   debug)
     echo "${CYA}==> Building with debug output enabled [${ARCH}]...${RST}"
+    ensure_cbindgen
     ensure_config
     echo "${BOLD}==> Building debug project [${ARCH}]...${RST}"
     cmake --build "${BUILD_DIR}" -j
@@ -277,7 +294,7 @@ case "${cmd}" in
       # output 디렉터리 전체 제거
       if [[ -d "${ROOT_DIR}/output" ]]; then
         rm -rf "${ROOT_DIR}/output"
-        echo "✔ Removed output directory"
+        echo "Removed output directory"
       fi
       ;;
 

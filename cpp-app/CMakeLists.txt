@@ -4,6 +4,9 @@ project(RustCppApp CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Apply PIE/PIC to all targets (safe for mixed static/shared)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # -------- Debug build option --------
 option(ENABLE_DEBUG_OUTPUT "Enable debug output" OFF)
 if(ENABLE_DEBUG_OUTPUT OR CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -21,7 +24,6 @@ find_program(CBINDGEN  cbindgen  REQUIRED)
 
 # ===========================================
 # ★ Standardize output directories (relative to root)
-#   bin/: executables, lib/: static libraries (.a), include/: headers, obj/: object files (.o)
 # ===========================================
 set(OUTPUT_ROOT "${CMAKE_SOURCE_DIR}/../output")
 set(OUTPUT_BIN  "${OUTPUT_ROOT}/bin")
@@ -29,14 +31,50 @@ set(OUTPUT_LIB  "${OUTPUT_ROOT}/lib")
 set(OUTPUT_INC  "${OUTPUT_ROOT}/include")
 set(OUTPUT_OBJ  "${OUTPUT_ROOT}/obj")
 
-# Specify standard output locations for CMake (default for all targets)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_BIN}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${OUTPUT_LIB}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_LIB}")
 
+# -------- Platform-specific tweaks (preserve macOS + add Linux) --------
+if(APPLE)
+  message(STATUS "Building on macOS (Apple) — existing behavior preserved.")
+elseif(UNIX) # Linux
+  add_compile_definitions(_GNU_SOURCE)
+  # Automatically search output/lib at runtime (for dlopen/shared library)
+  add_link_options(-Wl,-rpath,'$ORIGIN/../lib')
+endif()
+
+# -------- Auto-select Rust target triple when not provided --------
+if(NOT DEFINED ENV{CARGO_BUILD_TARGET} OR "$ENV{CARGO_BUILD_TARGET}" STREQUAL "")
+  if(APPLE)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+      set(DEFAULT_RUST_TRIPLE "aarch64-apple-darwin")
+    else()
+      set(DEFAULT_RUST_TRIPLE "x86_64-apple-darwin")
+    endif()
+  elseif(UNIX) # Linux
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+      set(DEFAULT_RUST_TRIPLE "aarch64-unknown-linux-gnu")
+    else()
+      set(DEFAULT_RUST_TRIPLE "x86_64-unknown-linux-gnu")
+    endif()
+  else()
+    set(DEFAULT_RUST_TRIPLE "")
+  endif()
+
+  if(NOT DEFAULT_RUST_TRIPLE STREQUAL "")
+    set(ENV{CARGO_BUILD_TARGET} "${DEFAULT_RUST_TRIPLE}")
+    message(STATUS "CARGO_BUILD_TARGET not set; defaulting to ${DEFAULT_RUST_TRIPLE}")
+  else()
+    message(WARNING "Unknown platform; CARGO_BUILD_TARGET remains unset.")
+  endif()
+else()
+  message(STATUS "Using user-provided CARGO_BUILD_TARGET = $ENV{CARGO_BUILD_TARGET}")
+endif()
+
 # -------- C++ sources (auto-discover) --------
 file(GLOB_RECURSE CPP_SOURCES CONFIGURE_DEPENDS
-   "${CMAKE_SOURCE_DIR}/src/*.cpp")
+     "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 if(NOT CPP_SOURCES)
   message(FATAL_ERROR "No C++ sources found in ${CMAKE_SOURCE_DIR}/src")
@@ -52,13 +90,13 @@ function(add_rust_staticlib TARGET_NAME CRATE_DIR)
   cmake_parse_arguments(RS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if(NOT EXISTS "${CRATE_DIR}/Cargo.toml")
-  message(FATAL_ERROR "Cargo.toml not found in ${CRATE_DIR}")
+    message(FATAL_ERROR "Cargo.toml not found in ${CRATE_DIR}")
   endif()
 
   file(GLOB_RECURSE RUST_SOURCES CONFIGURE_DEPENDS
-     "${CRATE_DIR}/src/*.rs" "${CRATE_DIR}/build.rs" )
+       "${CRATE_DIR}/src/*.rs" "${CRATE_DIR}/build.rs")
 
-  # Determine build profile and output path
+  # Determine build profile
   if(ENABLE_DEBUG_OUTPUT OR CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(RUST_PROFILE "debug")
   else()
@@ -67,16 +105,16 @@ function(add_rust_staticlib TARGET_NAME CRATE_DIR)
 
   # Determine output path according to CARGO_BUILD_TARGET
   if(DEFINED ENV{CARGO_BUILD_TARGET} AND NOT "$ENV{CARGO_BUILD_TARGET}" STREQUAL "")
-  set(RUST_TRIPLE "$ENV{CARGO_BUILD_TARGET}")
-  set(RUST_LIB "${CRATE_DIR}/target/${RUST_TRIPLE}/${RUST_PROFILE}/lib${TARGET_NAME}.a")
+    set(RUST_TRIPLE "$ENV{CARGO_BUILD_TARGET}")
+    set(RUST_LIB "${CRATE_DIR}/target/${RUST_TRIPLE}/${RUST_PROFILE}/lib${TARGET_NAME}.a")
   else()
-  set(RUST_LIB "${CRATE_DIR}/target/${RUST_PROFILE}/lib${TARGET_NAME}.a")
+    set(RUST_LIB "${CRATE_DIR}/target/${RUST_PROFILE}/lib${TARGET_NAME}.a")
   endif()
 
   # cbindgen header (generated directly to output/include)
   set(GEN_HEADER  "${OUTPUT_INC}/${TARGET_NAME}")
 
-  # Determine Rust build mode based on CMake build type
+  # rust build flags
   if(ENABLE_DEBUG_OUTPUT OR CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(RUST_BUILD_FLAGS "")
     set(RUST_BUILD_COMMENT "Building Rust crate (debug): ${TARGET_NAME}")
@@ -86,48 +124,48 @@ function(add_rust_staticlib TARGET_NAME CRATE_DIR)
   endif()
 
   add_custom_command(
-  OUTPUT "${RUST_LIB}"
-  COMMAND ${CMAKE_COMMAND} -E env CARGO_BUILD_TARGET=$ENV{CARGO_BUILD_TARGET}
-      "${CARGO}" build ${RUST_BUILD_FLAGS} --manifest-path "${CRATE_DIR}/Cargo.toml"
-  WORKING_DIRECTORY "${CRATE_DIR}"
-  DEPENDS ${RUST_SOURCES} "${CRATE_DIR}/Cargo.toml"
-  BYPRODUCTS "${RUST_LIB}"
-  COMMENT "${RUST_BUILD_COMMENT}"
-  VERBATIM
+    OUTPUT "${RUST_LIB}"
+    COMMAND ${CMAKE_COMMAND} -E env CARGO_BUILD_TARGET=$ENV{CARGO_BUILD_TARGET}
+            "${CARGO}" build ${RUST_BUILD_FLAGS} --manifest-path "${CRATE_DIR}/Cargo.toml"
+    WORKING_DIRECTORY "${CRATE_DIR}"
+    DEPENDS ${RUST_SOURCES} "${CRATE_DIR}/Cargo.toml"
+    BYPRODUCTS "${RUST_LIB}"
+    COMMENT "${RUST_BUILD_COMMENT}"
+    VERBATIM
   )
 
   if(RS_CBINDGEN_CFG)
-  set(CBINDGEN_CFG_FILE "${RS_CBINDGEN_CFG}")
+    set(CBINDGEN_CFG_FILE "${RS_CBINDGEN_CFG}")
   else()
-  set(CBINDGEN_CFG_FILE "${CBINDGEN_CFG}")
+    set(CBINDGEN_CFG_FILE "${CBINDGEN_CFG}")
   endif()
 
   add_custom_command(
-  OUTPUT "${GEN_HEADER}"
-  COMMAND "${CMAKE_COMMAND}" -E make_directory "${OUTPUT_INC}"
-  COMMAND "${CBINDGEN}" "${CRATE_DIR}" -c "${CBINDGEN_CFG_FILE}" -o "${GEN_HEADER}"
-  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-  DEPENDS ${RUST_SOURCES} "${CRATE_DIR}/Cargo.toml" "${CBINDGEN_CFG_FILE}"
-  COMMENT "Generating C header via cbindgen: ${GEN_HEADER}"
-  VERBATIM
+    OUTPUT "${GEN_HEADER}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${OUTPUT_INC}"
+    COMMAND "${CBINDGEN}" "${CRATE_DIR}" -c "${CBINDGEN_CFG_FILE}" -o "${GEN_HEADER}"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    DEPENDS ${RUST_SOURCES} "${CRATE_DIR}/Cargo.toml" "${CBINDGEN_CFG_FILE}"
+    COMMENT "Generating C header via cbindgen: ${GEN_HEADER}"
+    VERBATIM
   )
 
   add_custom_target(${TARGET_NAME}_rust ALL
-  DEPENDS "${RUST_LIB}" "${GEN_HEADER}"
+    DEPENDS "${RUST_LIB}" "${GEN_HEADER}"
   )
 
   # Expose as IMPORTED static library
   add_library(${TARGET_NAME}_imported STATIC IMPORTED GLOBAL)
   set_target_properties(${TARGET_NAME}_imported PROPERTIES
-  IMPORTED_LOCATION "${RUST_LIB}"
+    IMPORTED_LOCATION "${RUST_LIB}"
   )
   add_dependencies(${TARGET_NAME}_imported ${TARGET_NAME}_rust)
 
   # After build, copy Rust .a to output/lib
   add_custom_command(TARGET ${TARGET_NAME}_rust POST_BUILD
-  COMMAND "${CMAKE_COMMAND}" -E make_directory "${OUTPUT_LIB}"
-  COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${RUST_LIB}" "${OUTPUT_LIB}/"
-  COMMENT "Export rust staticlib -> ${OUTPUT_LIB}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${OUTPUT_LIB}"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${RUST_LIB}" "${OUTPUT_LIB}/"
+    COMMENT "Export rust staticlib -> ${OUTPUT_LIB}"
   )
 
   # Return to calling scope
@@ -140,24 +178,22 @@ add_rust_staticlib(llm_rust "${RUST_CRATE_DIR}" CBINDGEN_CFG "${CBINDGEN_CFG}")
 
 # ===========================================
 # C++: Manage individual .o, static .a, and executable
-#   - OBJECT library: cpp_objs (produces each .o)
-#   - STATIC library: cpp_static (for external linking, .a)
-#   - EXECUTABLE:     cpp_app (final executable)
 # ===========================================
 add_library(cpp_objs OBJECT ${CPP_SOURCES})
 add_dependencies(cpp_objs llm_rust_rust)
-target_include_directories(cpp_objs PRIVATE 
+target_include_directories(cpp_objs PRIVATE
   "${CMAKE_SOURCE_DIR}/include"
   "${OUTPUT_INC}"
   "${CMAKE_BINARY_DIR}/third_party/crow/include"
 )
-# Script to copy individual object files (.o)
+
+# Individual .o copy script
 set(COPY_OBJS_SCRIPT "${CMAKE_BINARY_DIR}/copy_objs.cmake")
 file(WRITE "${COPY_OBJS_SCRIPT}" "
   file(MAKE_DIRECTORY \"${OUTPUT_OBJ}\")
   foreach(obj IN LISTS OBJS)
-  get_filename_component(name \"\${obj}\" NAME)
-  file(COPY \"\${obj}\" DESTINATION \"${OUTPUT_OBJ}\")
+    get_filename_component(name \"\${obj}\" NAME)
+    file(COPY \"\${obj}\" DESTINATION \"${OUTPUT_OBJ}\")
   endforeach()
 ")
 
@@ -167,26 +203,30 @@ add_custom_target(export_o ALL
   COMMENT "Export C++ object files -> ${OUTPUT_OBJ}"
 )
 
-# Also create C++ static library (.a) for external linking
+# C++ static lib
 add_library(cpp_static STATIC $<TARGET_OBJECTS:cpp_objs>)
 set_target_properties(cpp_static PROPERTIES OUTPUT_NAME "llmrcpp_app")
 
 # Final executable
 add_executable(cpp_app $<TARGET_OBJECTS:cpp_objs>)
 add_dependencies(cpp_app llm_rust_rust export_o)
-target_link_libraries(cpp_app PRIVATE llm_rust_imported cpp_static)
-target_include_directories(cpp_app PRIVATE 
+
+# Common/individual platform linking
+set(PLATFORM_LIBS "")
+if(APPLE)
+  target_link_libraries(cpp_app PRIVATE "-framework CoreFoundation")
+elseif(UNIX) # Linux
+  list(APPEND PLATFORM_LIBS pthread dl)
+endif()
+
+target_link_libraries(cpp_app PRIVATE llm_rust_imported cpp_static ${PLATFORM_LIBS})
+
+target_include_directories(cpp_app PRIVATE
   "${OUTPUT_INC}"
   "${CMAKE_BINARY_DIR}/third_party/crow/include"
 )
 
-# macOS framework linking
-if(APPLE)
-  target_link_libraries(cpp_app PRIVATE "-framework CoreFoundation")
-endif()
-
-# Executable name
-set_target_properties(cpp_app PROPERTIES OUTPUT_NAME "llmrcpp_app")               # Executable name: llmrcpp_app
+set_target_properties(cpp_app PROPERTIES OUTPUT_NAME "llmrcpp_app")
 
 # -------- Clean helpers --------
 add_custom_target(clean-all

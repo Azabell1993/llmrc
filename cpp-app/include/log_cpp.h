@@ -41,7 +41,20 @@
 #include <ctime>
 #include <cstdarg>
 #include <mutex>
-#include <format>
+#ifdef __has_include
+  #if __has_include(<format>) && __cplusplus >= 202002L
+    #include <format>
+    #define HAS_STD_FORMAT 1
+  #else
+    #include <sstream>
+    #include <iomanip>
+    #define HAS_STD_FORMAT 0
+  #endif
+#else
+  #include <sstream>
+  #include <iomanip>
+  #define HAS_STD_FORMAT 0
+#endif
 #include <thread>
 #include <queue>
 #include <condition_variable>
