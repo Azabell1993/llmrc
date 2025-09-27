@@ -34,6 +34,9 @@ int main(int argc, char* argv[]) {
                                std::string(argv[1]) == "llm" && 
                                std::string(argv[2]) == "run");
     
+    // Check if this is any 'llm' command to skip parse_args
+    bool is_llm_command = (argc >= 2 && std::string(argv[1]) == "llm");
+    
     if (!is_llm_run_command) {
 #ifdef __APPLE__
         LLMRC_PRINT_I("Running on macOS");
@@ -66,9 +69,9 @@ int main(int argc, char* argv[]) {
      * to continue execution. All major steps are logged for traceability.
      */
     
-    // Skip parse_args for 'llm run' command to avoid "Unknown argument" message
+    // Skip parse_args for any 'llm' command to avoid "Unknown argument" message
     CmdArgs args;
-    if (!is_llm_run_command) {
+    if (!is_llm_command) {
         args = parse_args(argc, argv);
     }
     

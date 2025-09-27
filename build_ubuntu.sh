@@ -242,6 +242,8 @@ case "${cmd}" in
     echo "${CYA}==> Building with debug output enabled [${ARCH}/${TARGET_TRIPLE}]...${RST}"
     ensure_rust_target
     ensure_cbindgen
+    # Force reconfigure for debug mode to update CMAKE_BUILD_TYPE
+    rm -f "${BUILD_DIR}/CMakeCache.txt"
     ensure_config
     echo "${BOLD}==> Building debug project [${ARCH}]...${RST}"
     cmake --build "${BUILD_DIR}" -j
